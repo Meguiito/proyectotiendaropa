@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -48,7 +49,7 @@ fun QRScannerAndSalesButtons(activity: ComponentActivity) {
     ) {
         QRScannerButton(activity)
         Spacer(modifier = Modifier.height(16.dp))
-        SalesButton()
+        SalesButton(activity)
     }
 }
 
@@ -68,10 +69,12 @@ fun QRScannerButton(activity: ComponentActivity) {
 }
 
 @Composable
-fun SalesButton() {
+fun SalesButton(activity: ComponentActivity) {
     Button(
         onClick = {
-            // Lógica para la funcionalidad de "Ventas" (puede estar vacía por ahora)
+            // Abrir la pantalla de Ventas
+            val intent = Intent(activity, SalesActivity::class.java)
+            activity.startActivity(intent)
         },
         modifier = Modifier.fillMaxWidth()
     ) {
