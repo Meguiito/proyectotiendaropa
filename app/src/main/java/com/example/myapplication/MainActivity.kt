@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     QRScannerAndSalesButtons(this)
+                    //BananaShopScreen()
                 }
             }
         }
@@ -84,5 +85,13 @@ fun SalesButton() {
 fun QRScannerAndSalesButtonsPreview() {
     MyApplicationTheme {
         QRScannerAndSalesButtons(ComponentActivity())
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BananaShopScreenPreview() {
+    MyApplicationTheme {
+        BananaShopScreen()
     }
 }
