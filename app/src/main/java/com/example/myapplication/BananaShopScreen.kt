@@ -54,7 +54,7 @@ fun BananaShopScreen() {
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = 60.dp)
             )
 
-            // Columna que contiene los botones de la pantalla
+            // Columna que contiene los botones de pantalla
             Column(
                 modifier = Modifier.fillMaxWidth().align(Alignment.Center),
                 verticalArrangement = Arrangement.Top,

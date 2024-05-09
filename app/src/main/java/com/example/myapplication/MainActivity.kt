@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     QRScannerAndSalesButtons(this)
+                    // Pantalla inicio
                     //BananaShopScreen()
                 }
             }
