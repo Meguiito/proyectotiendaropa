@@ -21,19 +21,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.google.zxing.integration.android.IntentIntegrator
 
-class MainActivity : ComponentActivity() {
+class InicioActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QRScannerAndButtons(this)
+                    InicioScreen()
                 }
             }
         }
@@ -41,7 +39,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun QRScannerAndButtons(activity: ComponentActivity) {
+fun InicioScreen() {
     val context = LocalContext.current
 
     Column(
@@ -50,42 +48,61 @@ fun QRScannerAndButtons(activity: ComponentActivity) {
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        QRScannerButton(activity)
+        Button(
+            onClick = {
+                // Navegación a la pantalla de Ingresar
+                val intent = Intent(context, MainActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Ingresar")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                // Navegación a la pantalla de Inicio
-                val intent = Intent(context, InicioActivity::class.java)
+                // Navegación a la pantalla de Consulta
+                val intent = Intent(context, SalesActivity::class.java)
                 context.startActivity(intent)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Ir a Inicio")
+            Text(text = "Consulta")
         }
-    }
-}
 
-@Composable
-fun QRScannerButton(activity: ComponentActivity) {
-    Button(
-        onClick = {
-            // Abrir el escáner QR
-            val integrator = IntentIntegrator(activity)
-            integrator.setPrompt("Escanea un código QR")
-            integrator.initiateScan()
-        },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(text = "Escanear QR")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                // Navegación a la pantalla de Venta
+                val intent = Intent(context, SalesActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Venta")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                // Navegación a la pantalla de Editar
+                // Implementar lógica de edición
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Editar")
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun QRScannerAndButtonsPreview() {
+fun InicioScreenPreview() {
     MyApplicationTheme {
-        QRScannerAndButtons(ComponentActivity())
+        InicioScreen()
     }
 }

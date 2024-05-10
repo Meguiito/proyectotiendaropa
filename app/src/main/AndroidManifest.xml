@@ -32,6 +32,11 @@
         <activity
             android:name=".SalesActivity"
             android:exported="false" />
+        <activity
+            android:name=".InicioActivity"
+            android:exported="false" />
+
+
     </application>
 
 </manifest>
