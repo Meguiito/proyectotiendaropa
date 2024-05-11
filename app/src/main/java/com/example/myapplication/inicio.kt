@@ -90,6 +90,8 @@ fun InicioScreen() {
         Button(
             onClick = {
                 // Navegación a la pantalla de Editar
+                val intent = Intent(context, EditarActivity::class.java)
+                context.startActivity(intent)
                 // Implementar lógica de edición
             },
             modifier = Modifier.fillMaxWidth()
