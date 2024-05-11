@@ -115,7 +115,7 @@ class EditarActivity : ComponentActivity() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(text = "Editara")
+                        Text(text = "Editar")
                     }
                 }
             }
