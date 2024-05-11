@@ -1,7 +1,10 @@
 package com.example.myapplication
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Patterns
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +38,28 @@ class MainActivity : ComponentActivity() {
                 ) {
                     QRScannerAndButtons(this)
                 }
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+            if (result != null && result.contents != null) {
+                val scannedContent = result.contents
+                if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
+                    // Crear un Intent para abrir la URL en un navegador web
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scannedContent))
+                    startActivity(browserIntent)
+                } else {
+                    // El contenido escaneado no es una URL válida
+                    Toast.makeText(this, "El contenido escaneado no es una URL válida", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                // Manejar el caso en que el escaneo haya sido cancelado o no haya producido ningún resultado
+                Toast.makeText(this, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
             }
         }
     }
