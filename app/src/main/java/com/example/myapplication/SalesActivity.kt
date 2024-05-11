@@ -46,7 +46,7 @@ class SalesActivity : ComponentActivity() {
 @Composable
 fun SalesScreen() {
     val products = listOf(
-        Product("Producto 1", 9.99),
+        Product("Producto 1", 9.10),
         Product("Producto 2", 14.50),
         Product("Producto 3", 7.25)
     )
