@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,10 +20,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.google.zxing.integration.android.IntentIntegrator
 
@@ -68,26 +74,48 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun QRScannerAndButtons(activity: ComponentActivity) {
     val context = LocalContext.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+    val titleTextStyle = TextStyle(
+        fontSize = 30.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.Black
+    )
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
     ) {
-        QRScannerButton(activity)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                // Navegación a la pantalla de Inicio
-                val intent = Intent(context, InicioActivity::class.java)
-                context.startActivity(intent)
-            },
-            modifier = Modifier.fillMaxWidth()
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(text = "Ir a Inicio")
+            // Título "Banana Shop"
+            Text(
+                text = "Banana Shop",
+                style = titleTextStyle,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 60.dp)
+            )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            QRScannerButton(activity)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    // Navegación a la pantalla de Inicio
+                    val intent = Intent(context, InicioActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Ir a Inicio")
+            }
         }
     }
 }
