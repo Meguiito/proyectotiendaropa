@@ -9,6 +9,7 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -16,7 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -27,7 +32,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                QRScannerAndButtons(this@MainActivity)
+                BoxWithBackground {
+                    QRScannerAndButtons(this@MainActivity)
+                }
             }
         }
     }
@@ -69,12 +76,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+fun BoxWithBackground(content: @Composable () -> Unit) {
+    val backgroundImage: Painter = painterResource(id = R.drawable.fotofondo) // Reemplaza "fotofondo" con el nombre de tu imagen
+    Box(
+        modifier = Modifier.fillMaxSize(), // Esta línea hace que el contenedor Box ocupe todo el espacio disponible
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = backgroundImage,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
+        content()
+    }
+}
+
+
+
+@Composable
 fun QRScannerAndButtons(activity: ComponentActivity) {
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
