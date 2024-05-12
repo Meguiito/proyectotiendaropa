@@ -12,10 +12,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,13 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    QRScannerAndButtons(this)
-                }
+                QRScannerAndButtons(this@MainActivity)
             }
         }
     }
@@ -46,22 +39,8 @@ class MainActivity : ComponentActivity() {
             val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
             if (result != null && result.contents != null) {
                 val scannedContent = result.contents
-                if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
-                    // El contenido escaneado es una URL
-                    showConfirmationDialog(scannedContent)
-                } else {
-                    // El contenido escaneado es una cadena (por ejemplo, el nombre del paquete de una aplicación)
-                    // Abrir la aplicación utilizando un Intent explícito
-                    val appIntent = packageManager.getLaunchIntentForPackage(scannedContent)
-                    if (appIntent != null) {
-                        showConfirmationDialog(scannedContent)
-                    } else {
-                        // La aplicación no está instalada en el dispositivo
-                        Toast.makeText(this, "La aplicación no está instalada en el dispositivo", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                showConfirmationDialog(scannedContent)
             } else {
-                // Manejar el caso en que el escaneo haya sido cancelado o no haya producido ningún resultado
                 Toast.makeText(this, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
             }
         }
@@ -70,19 +49,16 @@ class MainActivity : ComponentActivity() {
     private fun showConfirmationDialog(scannedContent: String) {
         val context = this
         AlertDialog.Builder(this)
-            .setMessage("¿Desea abrir el contenido escaneado?")
+            .setMessage("Escaneaste el siguiente contenido: $scannedContent\n¿Deseas abrirlo?")
             .setPositiveButton("Sí") { dialog, which ->
                 if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
-                    // Abrir la URL en un navegador web
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scannedContent))
                     startActivity(browserIntent)
                 } else {
-                    // Abrir la aplicación utilizando un Intent explícito
                     val appIntent = packageManager.getLaunchIntentForPackage(scannedContent)
                     if (appIntent != null) {
                         startActivity(appIntent)
                     } else {
-                        // La aplicación no está instalada en el dispositivo
                         Toast.makeText(context, "La aplicación no está instalada en el dispositivo", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -100,16 +76,18 @@ fun QRScannerAndButtons(activity: ComponentActivity) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
             onClick = {
-                // Abrir el escáner QR
                 val integrator = IntentIntegrator(activity)
                 integrator.setPrompt("Escanea un código QR")
                 integrator.initiateScan()
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
             Text(text = "Escanear QR")
         }
@@ -118,11 +96,12 @@ fun QRScannerAndButtons(activity: ComponentActivity) {
 
         Button(
             onClick = {
-                // Navegación a la pantalla de Inicio
                 val intent = Intent(context, InicioActivity::class.java)
                 context.startActivity(intent)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
             Text(text = "Ir a Inicio")
         }
