@@ -47,6 +47,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    buildToolsVersion = "34.0.0"
 }
 
 dependencies {
@@ -59,8 +61,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("com.google.zxing:core:3.4.1")
-    implementation("com.journeyapps:zxing-android-embedded:4.2.0")
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
