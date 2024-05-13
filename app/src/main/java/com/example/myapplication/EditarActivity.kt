@@ -1,7 +1,9 @@
 package com.example.myapplication
-
 import android.content.Intent
 import android.os.Bundle
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -10,10 +12,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -31,26 +39,31 @@ class EditarActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                BoxWithBackground {
                     EditarScreen()
                 }
             }
         }
-    }
+
 
     data class Product(
-        val type: String,
-        val size: String,
-        val model: String,
-        val price: Double
+        val type: String="",
+        val size: String="",
+        val model: String="",
+        val price: Double=0.0
     )
 
     @Composable
     fun EditarScreen() {
         val context = LocalContext.current
-        val products = listOf(
-            Product("pantalon", "L", "Nike", 20.000),
-        )
+
+        var products by remember {
+            mutableStateOf(
+                listOf(
+                    Product()
+                )
+            )
+        }
+
         BoxWithBackground {
             Column(
                 modifier = Modifier
@@ -97,73 +110,95 @@ class EditarActivity : ComponentActivity() {
                     "Editar Producto",
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
+                        fontSize = 30.sp,
                         color = Color.White
+
                     ),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
 
-                products.forEach { product ->
-                    ProductRow(product = product)
-                    Spacer(modifier = Modifier.height(16.dp))
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                products.forEachIndexed { index, product ->
+                    ProductRow(product = product) { newProduct ->
+                        products = products.toMutableList().also { it[index] = newProduct }
+                    }
+
+                }}
                 }
+
+
+            }
+
+            @Composable
+            fun ProductRow(product: Product, onEditClick: (Product) -> Unit) {
+                var editedProduct by remember { mutableStateOf(product) }
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    TextField(
+                        value = TextFieldValue(editedProduct.type),
+                        onValueChange = {
+                            editedProduct = editedProduct.copy(type = it.text)
+                        },
+                        label = { Text("Tipo") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    TextField(
+                        value = TextFieldValue(editedProduct.size),
+                        onValueChange = {
+                            editedProduct = editedProduct.copy(size = it.text)
+                        },
+                        label = { Text("Talla") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    TextField(
+                        value = TextFieldValue(editedProduct.model),
+                        onValueChange = {
+                            editedProduct = editedProduct.copy(model = it.text)
+                        },
+                        label = { Text("Modelo") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    TextField(
+                        value = TextFieldValue(editedProduct.price.toString()),
+                        onValueChange = {
+                            editedProduct =
+                                editedProduct.copy(price = it.text.toDoubleOrNull() ?: 0.0)
+                        },
+                        label = { Text("Precio") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Botón de edición
+                    Button(
+                        onClick = { onEditClick(editedProduct) },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text("Editar")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
-    }
-
-    @Composable
-    fun ProductRow(product: Product) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        @Composable
+        fun BoxWithBackground(
+            content: @Composable () -> Unit,
+            background: Painter = painterResource(id = R.drawable.fotofondo)
         ) {
-            Text(
-                "Tipo: ${product.type}",
-                style = TextStyle(
-                    color = Color.White
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = background,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
                 )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Talla: ${product.size}",
-                style = TextStyle(
-                    color = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Modelo: ${product.model}",
-                style = TextStyle(
-                    color = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Precio: ${product.price}",
-                style = TextStyle(
-                    color = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            // Botón de edición
+                content()
+            }
         }
-    }
-}
-
-@Composable
-fun BoxWithBackground(
-    content: @Composable () -> Unit,
-    background: Painter = painterResource(id = R.drawable.fotofondo)
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = background,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
-        content()
-    }
-}
