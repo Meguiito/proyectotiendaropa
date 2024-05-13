@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -7,23 +9,20 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,12 +36,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    QRScannerAndButtons(this)
+                BoxWithBackground {
+                    QRScannerAndButtons(this@MainActivity)
                 }
             }
         }
@@ -55,21 +50,53 @@ class MainActivity : ComponentActivity() {
             val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
             if (result != null && result.contents != null) {
                 val scannedContent = result.contents
-                if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
-                    // Crear un Intent para abrir la URL en un navegador web
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scannedContent))
-                    startActivity(browserIntent)
-                } else {
-                    // El contenido escaneado no es una URL válida
-                    Toast.makeText(this, "El contenido escaneado no es una URL válida", Toast.LENGTH_SHORT).show()
-                }
+                showConfirmationDialog(scannedContent)
             } else {
-                // Manejar el caso en que el escaneo haya sido cancelado o no haya producido ningún resultado
                 Toast.makeText(this, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+    private fun showConfirmationDialog(scannedContent: String) {
+        val context = this
+        AlertDialog.Builder(this)
+            .setMessage("Escaneaste el siguiente contenido: $scannedContent\n¿Deseas abrirlo?")
+            .setPositiveButton("Sí") { dialog, which ->
+                if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scannedContent))
+                    startActivity(browserIntent)
+                } else {
+                    val appIntent = packageManager.getLaunchIntentForPackage(scannedContent)
+                    if (appIntent != null) {
+                        startActivity(appIntent)
+                    } else {
+                        Toast.makeText(context, "La aplicación no está instalada en el dispositivo", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
 }
+
+@Composable
+fun BoxWithBackground(content: @Composable () -> Unit) {
+    val backgroundImage: Painter = painterResource(id = R.drawable.fotofondo) // Reemplaza "fotofondo" con el nombre de tu imagen
+    Box(
+        modifier = Modifier.fillMaxSize(), // Esta línea hace que el contenedor Box ocupe todo el espacio disponible
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = backgroundImage,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
+        content()
+    }
+}
+
+
 
 @Composable
 fun QRScannerAndButtons(activity: ComponentActivity) {
@@ -77,61 +104,47 @@ fun QRScannerAndButtons(activity: ComponentActivity) {
     val titleTextStyle = TextStyle(
         fontSize = 30.sp,
         fontWeight = FontWeight.Bold,
-        color = Color.Black
+        color = Color.White
     )
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Título "Banana Shop"
-            Text(
-                text = "Banana Shop",
-                style = titleTextStyle,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 60.dp)
-            )
-        }
-        Column(
+        // Título "Banana Shop"
+        Text(
+            text = "Banana Shop",
+            style = titleTextStyle,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                val integrator = IntentIntegrator(activity)
+                integrator.setPrompt("Escanea un código QR")
+                integrator.initiateScan()
+            },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            QRScannerButton(activity)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    // Navegación a la pantalla de Inicio
-                    val intent = Intent(context, InicioActivity::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Ir a Inicio")
-            }
+            Text(text = "Escanear QR")
         }
-    }
-}
 
-@Composable
-fun QRScannerButton(activity: ComponentActivity) {
-    Button(
-        onClick = {
-            // Abrir el escáner QR
-            val integrator = IntentIntegrator(activity)
-            integrator.setPrompt("Escanea un código QR")
-            integrator.initiateScan()
-        },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(text = "Escanear QR")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                val intent = Intent(context, InicioActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Ir a Inicio")
+        }
     }
 }
 
