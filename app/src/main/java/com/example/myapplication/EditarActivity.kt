@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
+
 class EditarActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,13 +57,7 @@ class EditarActivity : ComponentActivity() {
     fun EditarScreen() {
         val context = LocalContext.current
 
-        var products by remember {
-            mutableStateOf(
-                listOf(
-                    Product()
-                )
-            )
-        }
+        var products by remember { mutableStateOf(listOf(Product())) }
 
         BoxWithBackground {
             Column(
@@ -119,15 +114,19 @@ class EditarActivity : ComponentActivity() {
                 )
                 Spacer(modifier = Modifier.height(32.dp))
                 products.forEachIndexed { index, product ->
-                    ProductRow(product = product) { newProduct ->
-                        products = products.toMutableList().also { it[index] = newProduct }
-                    }
-
-                }}
+                    ProductRow(
+                        product = product,
+                        onEditClick = { editedProduct ->
+                            products = products.toMutableList().also { it[index] = editedProduct }
+                        }
+                    )
                 }
-
-
             }
+        }
+    }
+
+
+
 
             @Composable
             fun ProductRow(product: Product, onEditClick: (Product) -> Unit) {
@@ -138,37 +137,29 @@ class EditarActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     TextField(
-                        value = TextFieldValue(editedProduct.type),
-                        onValueChange = {
-                            editedProduct = editedProduct.copy(type = it.text)
-                        },
+                        value = editedProduct.type,
+                        onValueChange = { editedProduct = editedProduct.copy(type = it) },
                         label = { Text("Tipo") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     TextField(
-                        value = TextFieldValue(editedProduct.size),
-                        onValueChange = {
-                            editedProduct = editedProduct.copy(size = it.text)
-                        },
+                        value = editedProduct.size,
+                        onValueChange = { editedProduct = editedProduct.copy(size = it) },
                         label = { Text("Talla") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     TextField(
-                        value = TextFieldValue(editedProduct.model),
-                        onValueChange = {
-                            editedProduct = editedProduct.copy(model = it.text)
-                        },
+                        value = editedProduct.model,
+                        onValueChange = { editedProduct = editedProduct.copy(model = it) },
                         label = { Text("Modelo") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     TextField(
-                        value = TextFieldValue(editedProduct.price.toString()),
-                        onValueChange = {
-                            editedProduct = editedProduct.copy(price = it.text)
-                        },
+                        value = editedProduct.price,
+                        onValueChange = { editedProduct = editedProduct.copy(price = it) },
                         label = { Text("Precio") },
                         modifier = Modifier.fillMaxWidth()
                     )
