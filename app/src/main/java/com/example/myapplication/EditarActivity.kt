@@ -49,7 +49,7 @@ class EditarActivity : ComponentActivity() {
         val type: String="",
         val size: String="",
         val model: String="",
-        val price: Double=0.0
+        val price: String="",
     )
 
     @Composable
@@ -167,8 +167,7 @@ class EditarActivity : ComponentActivity() {
                     TextField(
                         value = TextFieldValue(editedProduct.price.toString()),
                         onValueChange = {
-                            editedProduct =
-                                editedProduct.copy(price = it.text.toDoubleOrNull() ?: 0.0)
+                            editedProduct = editedProduct.copy(price = it.text)
                         },
                         label = { Text("Precio") },
                         modifier = Modifier.fillMaxWidth()
