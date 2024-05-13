@@ -48,7 +48,7 @@ fun InicioScreen() {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
     ) {
         // Botón de "volver"
         IconButton(
@@ -66,21 +66,21 @@ fun InicioScreen() {
                 tint = Color.White
             )
         }
-        // Título "Banana Shop"
-        Text(
-            text = "Banana Shop",
-            style = titleTextStyle,
-            modifier = Modifier.padding(top = 60.dp)
-        )
 
         // Columna que contiene los botones de la pantalla
         Column(
-            modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Título "Banana Shop"
+            Text(
+                text = "Banana Shop",
+                style = titleTextStyle,
+                modifier = Modifier.padding(top = 40.dp)
+            )
             // Botones con texto "Ingresar", "Consultar", "Venta" y "Editar"
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(50.dp))
             Button(
                 onClick = {
                     val intent = Intent(context, MainActivity::class.java)
