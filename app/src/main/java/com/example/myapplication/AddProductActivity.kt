@@ -34,8 +34,6 @@ data class ProductData(
     val Precio: Double
 )
 
-
-
 interface AddProductService {
     @POST("productos")
     fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
@@ -91,6 +89,9 @@ class AddProductActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         addProduct(productName, productPrice)
+                        // Limpiar los campos después de agregar el producto
+                        setProductName("")
+                        setProductPrice(0.0)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -109,7 +110,6 @@ class AddProductActivity : ComponentActivity() {
             override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@AddProductActivity, "Producto agregado exitosamente", Toast.LENGTH_SHORT).show()
-                    finish() // Regresa a la pantalla anterior
                 } else {
                     Toast.makeText(this@AddProductActivity, "Error al agregar el producto", Toast.LENGTH_SHORT).show()
                 }
@@ -120,5 +120,4 @@ class AddProductActivity : ComponentActivity() {
             }
         })
     }
-
 }
