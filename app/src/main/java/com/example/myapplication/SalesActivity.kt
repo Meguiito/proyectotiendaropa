@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -39,7 +40,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 
 data class Product(
     val _id: String,
@@ -47,16 +50,19 @@ data class Product(
     val price: Double
 )
 
-interface ProductService {
+interface SalesProductService {
     @GET("productos")
     fun getProducts(): Call<List<Product>>
+
+    @POST("productos")
+    fun addProduct(@Body productData: Map<String, Any>): Call<Map<String, String>>
 }
 
 class SalesActivity : ComponentActivity() {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")  // aca deben poner su ip(ipconfig en cmd)
+            .baseUrl("http://192.168.1.13:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -74,8 +80,8 @@ class SalesActivity : ComponentActivity() {
     }
 
     private fun getProducts() {
-        val productService = retrofit.create(ProductService::class.java)
-        val call = productService.getProducts()
+        val salesProductService = retrofit.create(SalesProductService::class.java)
+        val call = salesProductService.getProducts()
 
         call.enqueue(object : Callback<List<Product>> {
             override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
@@ -90,6 +96,11 @@ class SalesActivity : ComponentActivity() {
                 Toast.makeText(applicationContext, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun navigateToAddProductScreen() {
+        val intent = Intent(this, AddProductActivity::class.java)
+        startActivity(intent)
     }
 
     @Composable
@@ -133,7 +144,7 @@ class SalesActivity : ComponentActivity() {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                // Título "Banana Shop"
+                // Título "Venta"
                 Text(
                     text = "Venta",
                     style = TextStyle(
@@ -155,21 +166,12 @@ class SalesActivity : ComponentActivity() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = {},
+                        onClick = { navigateToAddProductScreen() },
                         modifier = Modifier
                             .weight(1f)
                             .padding(8.dp)
                     ) {
                         Text(text = "Agregar más productos")
-                    }
-
-                    Button(
-                        onClick = {},
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(8.dp)
-                    ) {
-                        Text(text = "Terminar")
                     }
                 }
             }
