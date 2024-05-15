@@ -88,7 +88,7 @@ class EditarProductoActivity : ComponentActivity() {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Guardar cambios")
+                    Text("Guardar cambio")
                 }
             }
         }
