@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -51,10 +52,10 @@ data class Product(
 )
 
 interface SalesProductService {
-    @GET("productos")
+    @GET("ventas")
     fun getProducts(): Call<List<Product>>
 
-    @POST("productos")
+    @POST("ventas")
     fun addProduct(@Body productData: Map<String, Any>): Call<Map<String, String>>
 }
 
@@ -62,7 +63,7 @@ class SalesActivity : ComponentActivity() {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.4:5000/")
+            .baseUrl("http://127.0.0.1:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

@@ -1,15 +1,19 @@
 package com.example.myapplication
 
+
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -18,7 +22,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import retrofit2.Call
@@ -30,13 +35,11 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 data class ProductData(
-    val Producto: String,
-    val Precio: String,
-    val toDouble: Double
+    val qr_id: String
 )
 
 interface AddProductService {
-    @POST("productos")
+    @POST("ventas") // Endpoint actualizado
     fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
 }
 
@@ -59,40 +62,32 @@ class AddProductActivity : ComponentActivity() {
 
     @Composable
     fun AddProductScreen() {
-        val (productName, setProductName) = remember { mutableStateOf("") }
-        val (productPrice, setProductPrice) = remember { mutableStateOf(0.0) }
-        val context = LocalContext.current
+        val (qrId, setQrId) = remember { mutableStateOf("") }
 
-        BoxWithBackground {
+        BoxWithBackgroundForAddProduct {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextField(
-                    value = productName,
-                    onValueChange = setProductName,
-                    label = { Text("Nombre del producto") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = productPrice.toString(),
-                    onValueChange = { setProductPrice(it.toDoubleOrNull() ?: 0.0) },
-                    label = { Text("Precio del producto") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = qrId,
+                    onValueChange = { setQrId(it) },
+                    label = { Text("Código QR") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        addProduct(productName, productPrice)
-                        // Limpiar los campos después de agregar el producto
-                        setProductName("")
-                        setProductPrice(0.0)
+                        addProduct(qrId)
+                        // Limpiar el campo después de agregar el producto
+                        setQrId("")
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -102,9 +97,9 @@ class AddProductActivity : ComponentActivity() {
         }
     }
 
-    private fun addProduct(name: String, price: Double) {
+    private fun addProduct(qrId: String) {
         val addProductService = retrofit.create(AddProductService::class.java)
-        val productData = ProductData(name, price.toString(), price.toDouble())
+        val productData = ProductData(qrId)
 
         val call = addProductService.addProduct(productData)
         call.enqueue(object : Callback<Map<String, String>> {
@@ -120,5 +115,22 @@ class AddProductActivity : ComponentActivity() {
                 Toast.makeText(this@AddProductActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+}
+
+@Composable
+fun BoxWithBackgroundForAddProduct(content: @Composable () -> Unit) {
+    val backgroundImage = painterResource(id = R.drawable.fotofondo) // Asegúrate de tener esta importación
+    Box(
+        modifier = Modifier.fillMaxSize(), // Esta línea hace que el contenedor Box ocupe todo el espacio disponible
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = backgroundImage,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
+        content()
     }
 }
