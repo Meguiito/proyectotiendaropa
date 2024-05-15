@@ -1,9 +1,6 @@
 package com.example.myapplication
 import android.content.Intent
 import android.os.Bundle
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -12,14 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,51 +19,74 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.*
+
+import androidx.compose.runtime.Composable
+
 
 
 class EditarActivity : ComponentActivity() {
+
+    private val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.0.4:5000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    private val service: EditarActivityService by lazy {
+        retrofit.create(EditarActivityService::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val productId = intent.getStringExtra("PRODUCT_ID")
         setContent {
             MyApplicationTheme {
-                EditarScreen()
+                EditarScreen(productId)
             }
         }
     }
 
-
     data class Product(
-        val type: String="",
-        val size: String="",
-        val model: String="",
-        val price: String="",
+        val _id: String = "",
+        val Producto: String = "",
+        val Precio: Double = 0.0
     )
 
+    interface EditarActivityService {
+        @GET("productos/{id}")
+        fun getProduct(@Path("id") id: String): Call<Product>
+
+        @PUT("productos/{id}")
+        fun updateProduct(@Path("id") id: String, @Body productData: Product): Call<Map<String, String>>
+    }
+
     @Composable
-    fun EditarScreen() {
+    fun EditarScreen(initialProductId: String?) {
         val context = LocalContext.current
 
-        var products by remember { mutableStateOf(listOf(Product())) }
+        var productId by remember { mutableStateOf(initialProductId ?: "") }
+        var product by remember { mutableStateOf<Product?>(null) }
+        var isLoading by remember { mutableStateOf(false) }
 
         BoxWithBackground {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
             ) {
-                // Botón de "volver"
                 IconButton(
                     onClick = {
-                        val intent = Intent(context, InicioActivity::class.java)
-                        context.startActivity(intent)
+
                     },
                     modifier = Modifier
                         .padding(16.dp)
@@ -87,7 +101,6 @@ class EditarActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título "Banana Shop"
                 Text(
                     text = "Banana Shop",
                     style = TextStyle(
@@ -100,95 +113,79 @@ class EditarActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título "Editar Producto" centrado
-                Text(
-                    "Editar Producto",
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 30.sp,
-                        color = Color.White
-
-                    ),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-
+                TextField(
+                    value = productId,
+                    onValueChange = { productId = it },
+                    label = { Text("ID del producto") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+
                 Spacer(modifier = Modifier.height(32.dp))
-                products.forEachIndexed { index, product ->
-                    ProductRow(
-                        product = product,
-                        onEditClick = { editedProduct ->
-                            products = products.toMutableList().also { it[index] = editedProduct }
+
+                Button(
+                    onClick = {
+                        fetchProduct(productId) {
+                            product = it
+                            isLoading = false
+
+                            // Abrir la actividad para editar el producto
+                            val intent = Intent(context, EditarProductoActivity::class.java)
+                            intent.putExtra("PRODUCT_ID", productId)
+                            startActivity(intent)
                         }
-                    )
+                    }
+                ) {
+                    Text(text = "Editar Producto")
+                }
+
+                if (isLoading) {
+                    LoadingIndicator()
                 }
             }
         }
     }
 
-
-
+    @Composable
+    fun LoadingIndicator() {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
 
     @Composable
-    fun ProductRow(product: Product, onEditClick: (Product) -> Unit) {
-        var editedProduct by remember { mutableStateOf(product) }
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            TextField(
-                value = editedProduct.type,
-                onValueChange = { editedProduct = editedProduct.copy(type = it) },
-                label = { Text("Tipo") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            TextField(
-                value = editedProduct.size,
-                onValueChange = { editedProduct = editedProduct.copy(size = it) },
-                label = { Text("Talla") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            TextField(
-                value = editedProduct.model,
-                onValueChange = { editedProduct = editedProduct.copy(model = it) },
-                label = { Text("Modelo") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            TextField(
-                value = editedProduct.price,
-                onValueChange = { editedProduct = editedProduct.copy(price = it) },
-                label = { Text("Precio") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Botón de edición
-            Button(
-                onClick = { onEditClick(editedProduct) },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Editar")
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-@Composable
-fun BoxWithBackground(
-    content: @Composable () -> Unit,
-    background: Painter = painterResource(id = R.drawable.fotofondo)
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+    fun BoxWithBackground(
+        content: @Composable () -> Unit,
+        background: Painter = painterResource(id = R.drawable.fotofondo)
     ) {
-        Image(
-            painter = background,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize()
-        )
-        content()
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = background,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize()
+            )
+            content()
+        }
+    }
+
+    private fun fetchProduct(id: String, callback: (Product) -> Unit) {
+        service.getProduct(id).enqueue(object : Callback<Product> {
+            override fun onResponse(call: Call<Product>, response: Response<Product>) {
+                if (response.isSuccessful) {
+                    callback(response.body()!!)
+                } else {
+                    // Handle error response
+                }
+            }
+
+            override fun onFailure(call: Call<Product>, t: Throwable) {
+                // Handle failure
+            }
+        })
     }
 }

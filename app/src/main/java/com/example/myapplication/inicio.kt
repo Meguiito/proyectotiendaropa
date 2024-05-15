@@ -114,8 +114,8 @@ fun InicioScreen() {
             Button(
                 onClick = {
                     val intent = Intent(context, EditarActivity::class.java)
+                    intent.putExtra("PRODUCT_ID", "") // Reemplaza "1" con el ID del producto que deseas editar
                     context.startActivity(intent)
-                    // Implementar lógica de edición
                 }
             ) {
                 Text(text = "Editar")

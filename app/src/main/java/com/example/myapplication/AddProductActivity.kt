@@ -31,7 +31,8 @@ import retrofit2.http.POST
 
 data class ProductData(
     val Producto: String,
-    val Precio: Double
+    val Precio: String,
+    val toDouble: Double
 )
 
 interface AddProductService {
@@ -103,7 +104,7 @@ class AddProductActivity : ComponentActivity() {
 
     private fun addProduct(name: String, price: Double) {
         val addProductService = retrofit.create(AddProductService::class.java)
-        val productData = ProductData(name, price)
+        val productData = ProductData(name, price.toString(), price.toDouble())
 
         val call = addProductService.addProduct(productData)
         call.enqueue(object : Callback<Map<String, String>> {
