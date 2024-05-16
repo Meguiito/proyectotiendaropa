@@ -1,6 +1,6 @@
 package com.example.myapplication
 
-
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.google.zxing.integration.android.IntentIntegrator
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,19 +35,25 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 
+data class NewClassName(
+    val qr_id: String,
+    val producto: String,
+    val precio: Double
+)
 data class ProductData(
     val qr_id: String
 )
-
 interface AddProductService {
-    @POST("ventas") // Endpoint actualizado
+    @POST("ventas")
     fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
+    @POST("agregar-venta")
+    fun addProductFromQR(@Body productData: NewClassName): Call<Map<String, String>>
 }
 
 class AddProductActivity : ComponentActivity() {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")
+            .baseUrl("http://127.0.0.11:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -86,12 +93,22 @@ class AddProductActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         addProduct(qrId)
-                        // Limpiar el campo después de agregar el producto
                         setQrId("")
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Guardar producto")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        startQRScanner()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Escanear QR")
                 }
             }
         }
@@ -116,13 +133,73 @@ class AddProductActivity : ComponentActivity() {
             }
         })
     }
+
+
+    private fun startQRScanner() {
+        val integrator = IntentIntegrator(this)
+        integrator.setOrientationLocked(false)
+        integrator.setPrompt("Escanea el código QR")
+        integrator.setBeepEnabled(false)
+        integrator.setCaptureActivity(ScanActivity::class.java)
+        integrator.addExtra("SCAN_WIDTH", 800)
+        integrator.addExtra("SCAN_HEIGHT", 800)
+        integrator.initiateScan()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        if (result != null) {
+            if (result.contents != null) {
+                val qrContent = result.contents
+                processQRContent(qrContent)
+            } else {
+                Toast.makeText(this, "No se pudo escanear el código QR", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    private fun processQRContent(qrContent: String) {
+        val retrofit: Retrofit = Retrofit.Builder()
+            .baseUrl("http://127.0.0.1:5000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val addProductService = retrofit.create(AddProductService::class.java)
+
+        // Parsea el contenido del código QR
+        val qrData = qrContent.split("\n")
+        val qrId = qrData[0].split(": ")[1]
+        val producto = qrData[1].split(": ")[1]
+        val precio = qrData[2].split(": ")[1].toDouble()
+
+        val productData = NewClassName(qrId, producto, precio)
+
+        val call = addProductService.addProductFromQR(productData)
+        call.enqueue(object : Callback<Map<String, String>> {
+            override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@AddProductActivity, "Producto agregado exitosamente", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@AddProductActivity, "Error al agregar el producto", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
+                Toast.makeText(this@AddProductActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 }
+
+class ScanActivity : com.journeyapps.barcodescanner.CaptureActivity()
 
 @Composable
 fun BoxWithBackgroundForAddProduct(content: @Composable () -> Unit) {
     val backgroundImage = painterResource(id = R.drawable.fotofondo) // Asegúrate de tener esta importación
     Box(
-        modifier = Modifier.fillMaxSize(), // Esta línea hace que el contenedor Box ocupe todo el espacio disponible
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Image(
