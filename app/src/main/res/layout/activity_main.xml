@@ -109,7 +109,7 @@
       android:layout_marginStart="164dp"
       android:layout_marginTop="20dp"
       android:layout_marginEnd="165dp"
-      android:text="TextView"
+      android:text="10000"
       android:textAlignment="center"
       android:textColor="@color/white"
       android:textSize="20sp"
