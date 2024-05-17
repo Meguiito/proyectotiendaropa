@@ -72,12 +72,6 @@ class EditarActivity : ComponentActivity() {
         }
     }
 
-    data class Product(
-        val _id: String = "",
-        val Producto: String = "",
-        val Precio: Double = 0.0
-    )
-
     interface EditarActivityService {
         @GET("productos/{id}")
         fun getProduct(@Path("id") id: String): Call<Product>
