@@ -53,7 +53,7 @@ class EditarActivity : ComponentActivity() {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")
+            .baseUrl("http://192.168.0.4:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -102,7 +102,8 @@ class EditarActivity : ComponentActivity() {
             ) {
                 IconButton(
                     onClick = {
-
+                        val intent = Intent(context, InicioActivity::class.java)
+                        context.startActivity(intent)
                     },
                     modifier = Modifier
                         .padding(16.dp)

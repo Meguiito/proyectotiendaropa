@@ -67,7 +67,7 @@ class SalesActivity : ComponentActivity() {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")
+            .baseUrl("http://192.168.0.4:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -130,7 +130,8 @@ class SalesActivity : ComponentActivity() {
             ) {
                 // Botón de "volver"
                 IconButton(
-                    onClick = { /* Acción al presionar el botón de volver */ },
+                    onClick = { val intent = Intent(context, InicioActivity::class.java)
+                        context.startActivity(intent) },
                     modifier = Modifier
                         .padding(16.dp)
                         .background(Color(0xFF00668b), shape = RoundedCornerShape(8.dp))

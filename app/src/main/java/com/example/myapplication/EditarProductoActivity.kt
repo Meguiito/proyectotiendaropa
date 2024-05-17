@@ -26,7 +26,7 @@ import retrofit2.http.Path
 
 data class ProductDataa(
     val Producto: String,
-    val Precio: String
+    val Precio: Double
 )
 
 interface EditProductService {
@@ -121,7 +121,7 @@ class EditarProductoActivity : ComponentActivity() {
         }
 
         // Crear un objeto ProductData con los datos proporcionados
-        val productData = ProductDataa(name, price.toString())
+        val productData = ProductDataa(name, parsedPrice)
 
         val call = editProductService.editProduct(productId, productData)
         call.enqueue(object : Callback<Map<String, String>> {
