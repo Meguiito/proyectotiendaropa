@@ -104,7 +104,7 @@ fun InicioScreen() {
             Spacer(modifier = Modifier.height(50.dp))
             Button(
                 onClick = {
-                    val intent = Intent(context, SalesActivity::class.java)
+                    val intent = Intent(context, MainActivity2::class.java)
                     context.startActivity(intent)
                 }
             ) {
