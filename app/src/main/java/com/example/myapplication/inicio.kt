@@ -7,11 +7,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,7 +104,7 @@ fun InicioScreen() {
             Spacer(modifier = Modifier.height(50.dp))
             Button(
                 onClick = {
-                    val intent = Intent(context, SalesActivity::class.java)
+                    val intent = Intent(context, MainActivity2::class.java)
                     context.startActivity(intent)
                 }
             ) {
@@ -104,7 +113,7 @@ fun InicioScreen() {
             Spacer(modifier = Modifier.height(50.dp))
             Button(
                 onClick = {
-                    val intent = Intent(context, MainActivity2::class.java)
+                    val intent = Intent(context, SalesActivity::class.java)
                     context.startActivity(intent)
                 }
             ) {
