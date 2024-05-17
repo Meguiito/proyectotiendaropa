@@ -53,7 +53,7 @@ interface AddProductService {
 class AddProductActivity : ComponentActivity() {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://127.0.0.11:5000/")
+            .baseUrl("http://127.0.0.1:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

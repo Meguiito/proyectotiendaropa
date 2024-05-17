@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -16,10 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -41,9 +43,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.http.Query
 
 data class Product(
     val _id: String,
@@ -51,12 +52,15 @@ data class Product(
     val price: Double
 )
 
+data class PagedResponse(
+    val ventas: List<Product>,
+    val total_pages: Int,
+    val current_page: Int
+)
+
 interface SalesProductService {
     @GET("ventas")
-    fun getProducts(): Call<List<Product>>
-
-    @POST("ventas")
-    fun addProduct(@Body productData: Map<String, Any>): Call<Map<String, String>>
+    fun getProducts(@Query("page") page: Int, @Query("limit") limit: Int): Call<PagedResponse>
 }
 
 class SalesActivity : ComponentActivity() {
@@ -67,7 +71,11 @@ class SalesActivity : ComponentActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
+
     private var products by mutableStateOf(emptyList<Product>())
+    private var currentPage by mutableStateOf(1)
+    private var isLoading by mutableStateOf(true)
+    private var totalPages by mutableStateOf(1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,23 +84,29 @@ class SalesActivity : ComponentActivity() {
                 SalesScreen()
             }
         }
-        getProducts()
+        loadProducts()
     }
 
-    private fun getProducts() {
+    private fun loadProducts(page: Int = 1) {
+        isLoading = true
         val salesProductService = retrofit.create(SalesProductService::class.java)
-        val call = salesProductService.getProducts()
+        val call = salesProductService.getProducts(page, 15)
 
-        call.enqueue(object : Callback<List<Product>> {
-            override fun onResponse(call: Call<List<Product>>, response: Response<List<Product>>) {
+        call.enqueue(object : Callback<PagedResponse> {
+            override fun onResponse(call: Call<PagedResponse>, response: Response<PagedResponse>) {
+                isLoading = false
                 if (response.isSuccessful) {
-                    products = response.body() ?: emptyList()
+                    val pagedResponse = response.body()!!
+                    products = pagedResponse.ventas
+                    totalPages = pagedResponse.total_pages
+                    currentPage = pagedResponse.current_page
                 } else {
                     Toast.makeText(applicationContext, "Error al obtener productos", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onFailure(call: Call<List<Product>>, t: Throwable) {
+            override fun onFailure(call: Call<PagedResponse>, t: Throwable) {
+                isLoading = false
                 Toast.makeText(applicationContext, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
@@ -116,9 +130,7 @@ class SalesActivity : ComponentActivity() {
             ) {
                 // Botón de "volver"
                 IconButton(
-                    onClick = {
-                        // Acción al presionar el botón de volver
-                    },
+                    onClick = { /* Acción al presionar el botón de volver */ },
                     modifier = Modifier
                         .padding(16.dp)
                         .background(Color(0xFF00668b), shape = RoundedCornerShape(8.dp))
@@ -156,10 +168,26 @@ class SalesActivity : ComponentActivity() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                ProductTable(products = products)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    ProductTable(products = products)
+                }
 
-                Spacer(modifier = Modifier.height(70.dp))
-                // Botones Agregar mas productos o Terminar
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PaginationControls(
+                    currentPage = currentPage,
+                    totalPages = totalPages,
+                    onPageSelected = { page ->
+                        currentPage = page
+                        loadProducts(page)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botones Agregar más productos o Terminar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -207,19 +235,43 @@ class SalesActivity : ComponentActivity() {
                     )
                 }
             }
-            items(products.size) { index ->
+            items(products) { product ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        products[index].name,
+                        product.name,
                         style = TextStyle(color = Color.White)
                     )
                     Text(
-                        products[index].price.toString(),
+                        product.price.toString(),
                         style = TextStyle(color = Color.White)
                     )
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun PaginationControls(
+        currentPage: Int,
+        totalPages: Int,
+        onPageSelected: (Int) -> Unit
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            for (page in 1..totalPages) {
+                Button(
+                    onClick = { onPageSelected(page) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (page == currentPage) Color.Gray else Color.LightGray
+                    ),
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Text(text = page.toString())
                 }
             }
         }
