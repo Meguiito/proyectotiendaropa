@@ -130,7 +130,8 @@ class SalesActivity : ComponentActivity() {
             ) {
                 // Botón de "volver"
                 IconButton(
-                    onClick = { /* Acción al presionar el botón de volver */ },
+                    onClick = { val intent = Intent(context, InicioActivity::class.java)
+                        context.startActivity(intent) },
                     modifier = Modifier
                         .padding(16.dp)
                         .background(Color(0xFF00668b), shape = RoundedCornerShape(8.dp))

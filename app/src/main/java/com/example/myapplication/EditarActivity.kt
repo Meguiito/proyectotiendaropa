@@ -102,7 +102,8 @@ class EditarActivity : ComponentActivity() {
             ) {
                 IconButton(
                     onClick = {
-
+                        val intent = Intent(context, InicioActivity::class.java)
+                        context.startActivity(intent)
                     },
                     modifier = Modifier
                         .padding(16.dp)
