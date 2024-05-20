@@ -1,18 +1,20 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import retrofit2.Call
@@ -20,137 +22,168 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Path
-
-data class ProductDataa(
-    val Producto: String,
-    val Precio: Double
-)
+import retrofit2.http.Body
 
 interface EditProductService {
+    @GET("productos/qr/{qr_id}")
+    fun getProductByQrId(@Path("qr_id") qrId: String): Call<Producto>
+
     @PUT("productos/{id}")
-    fun editProduct(@Path("id") id: String, @Body productData: ProductDataa): Call<Map<String, String>>
+    fun updateProduct(@Path("id") id: String, @Body product: Producto): Call<Map<String, String>>
 }
 
 class EditarProductoActivity : ComponentActivity() {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://192.168.0.4:5000/")
+            .baseUrl("http://192.168.1.13:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val qrId = intent.getStringExtra("qr_id") ?: ""
         setContent {
             MyApplicationTheme {
-                EditarProductoScreen()
+                EditProductScreen(qrId)
             }
         }
     }
 
     @Composable
-    fun EditarProductoScreen() {
-        val (productName, setProductName) = remember { mutableStateOf("") }
-        val (productPrice, setProductPrice) = remember { mutableStateOf("") }
+    fun EditProductScreen(qrId: String) {
+        var product by remember { mutableStateOf<Producto?>(null) }
+        var productName by remember { mutableStateOf("") }
+        var productPrice by remember { mutableStateOf("") }
 
-        BoxWithBackground {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        LaunchedEffect(qrId) {
+            fetchProductDetails(qrId) { fetchedProduct ->
+                product = fetchedProduct
+                if (fetchedProduct != null) {
+                    productName = fetchedProduct.Producto
+                    productPrice = fetchedProduct.Precio.toString()
+                }
+            }
+        }
+        BoxWithBackgroundForeditar {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (product != null) {
                 TextField(
                     value = productName,
-                    onValueChange = setProductName,
-                    label = { Text("Nuevo nombre del producto") },
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = { productName = it },
+                    label = { Text("Producto") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextField(
                     value = productPrice,
-                    onValueChange = setProductPrice,
-                    label = { Text("Nuevo precio del producto") },
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = { productPrice = it },
+                    label = { Text("Precio") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = {
-                        editProduct(productName, productPrice)
-                        setProductName("")
-                        setProductPrice("")
+                        if (product != null) {
+                            val updatedPrice = productPrice.toDoubleOrNull()
+                            if (updatedPrice != null) {
+                                updateProduct(product!!._id, productName, updatedPrice, qrId)
+                            } else {
+                                Toast.makeText(this@EditarProductoActivity, "Precio inválido", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Guardar cambio")
+                    Text("Actualizar Producto")
                 }
+            } else {
+                Text("Buscando producto...")
             }
         }
     }
+    }
 
-    private fun editProduct(name: String, price: String) {
-        val editProductService = retrofit.create(EditProductService::class.java)
+    private fun fetchProductDetails(qrId: String, onProductFetched: (Producto?) -> Unit) {
+        val productService = retrofit.create(EditProductService::class.java)
+        val call = productService.getProductByQrId(qrId)
 
-        // Convierte el precio a Double
-        val parsedPrice = price.toDoubleOrNull()
-        if (parsedPrice == null) {
-            Toast.makeText(
-                this,
-                "Error: Precio no válido",
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
-        // Obtener la ID del producto actual que se está editando
-        val productId = intent.getStringExtra("PRODUCT_ID")
-
-        if (productId.isNullOrEmpty()) {
-            Toast.makeText(
-                this,
-                "Error: ID del producto no válida",
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
-        // Crear un objeto ProductData con los datos proporcionados
-        val productData = ProductDataa(name, parsedPrice)
-
-        val call = editProductService.editProduct(productId, productData)
-        call.enqueue(object : Callback<Map<String, String>> {
-            override fun onResponse(
-                call: Call<Map<String, String>>,
-                response: Response<Map<String, String>>
-            ) {
+        call.enqueue(object : Callback<Producto> {
+            override fun onResponse(call: Call<Producto>, response: Response<Producto>) {
                 if (response.isSuccessful) {
-                    Toast.makeText(
-                        this@EditarProductoActivity,
-                        "Producto editado exitosamente",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    onProductFetched(response.body())
                 } else {
-                    Toast.makeText(
-                        this@EditarProductoActivity,
-                        "Error al editar el producto: ${response.message()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    onProductFetched(null)
+                    Toast.makeText(this@EditarProductoActivity, "Producto no encontrado", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<Producto>, t: Throwable) {
+                onProductFetched(null)
+                Toast.makeText(this@EditarProductoActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun updateProduct(id: String, name: String, price: Double, qrId: String) {
+        val productService = retrofit.create(EditProductService::class.java)
+        val updatedProduct = Producto(id, name, price)
+        val call = productService.updateProduct(id, updatedProduct)
+
+        call.enqueue(object : Callback<Map<String, String>> {
+            override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@EditarProductoActivity, "Producto actualizado exitosamente", Toast.LENGTH_SHORT).show()
+                    navigateBackToInicio(qrId)
+                } else {
+                    Toast.makeText(this@EditarProductoActivity, "Error al actualizar el producto", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
-                Toast.makeText(
-                    this@EditarProductoActivity,
-                    "Error de red: ${t.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@EditarProductoActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun navigateBackToInicio(qrId: String) {
+        val intent = Intent(this, InicioActivity::class.java)
+        intent.putExtra("qr_id", qrId)
+        startActivity(intent)
+        finish()  // Finaliza la actividad actual para evitar que el usuario regrese a ella con el botón de retroceso
+    }
+}
+@Composable
+fun BoxWithBackgroundForeditar(content: @Composable () -> Unit) {
+    val backgroundImage = painterResource(id = R.drawable.fotofondo) // Asegúrate de tener esta importación
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = backgroundImage,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
+        content()
     }
 }
