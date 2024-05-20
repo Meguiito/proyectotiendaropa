@@ -59,7 +59,7 @@ interface AddProductService {
 class MainActivity : ComponentActivity() {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://192.168.1.13:5000/")
+            .baseUrl("http://127.0.0.1:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -171,7 +171,7 @@ class MainActivity : ComponentActivity() {
 
     private fun processQRContent(qrContent: String) {
         val retrofit: Retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.1.13:5000/")
+            .baseUrl("http://127.0.0.1:5000/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
