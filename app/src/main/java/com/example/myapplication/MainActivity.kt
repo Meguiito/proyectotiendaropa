@@ -1,200 +1,89 @@
 package com.example.myapplication
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.google.zxing.integration.android.IntentIntegrator
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-
-data class NewClassName(
-    val qr_id: String,
-    val producto: String,
-    val precio: Double
-
-)
-data class ProductData(
-    val qr_id: String
-)
-interface AddProductService {
-    @POST("productos")
-    fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
-    @POST("agregar-producto")
-    fun addProductFromQR(@Body productData: NewClassName): Call<Map<String, String>>
-    @GET("productos/qr/{qr_id}")
-    fun getProductoByQrId(@Path("qr_id") qrId: String): Call<Producto>
-}
-
 
 class MainActivity : ComponentActivity() {
-    private val retrofit: Retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                AddProductScreen()
+                BoxWithBackground {
+                    QRScannerAndButtons(this@MainActivity)
+                }
             }
         }
     }
 
-    @Composable
-    fun AddProductScreen() {
-        val (qrId, setQrId) = remember { mutableStateOf("") }
-
-        BoxWithBackgroundForAddProduct {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TextField(
-                    value = qrId,
-                    onValueChange = { setQrId(it) },
-                    label = { Text("Ingresa el Código QR") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        addProduct(qrId)
-                        setQrId("")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Buscar QR")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        startQRScanner()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Escanear QR")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-            }
-        }
-    }
-
-
-    private fun addProduct(qrId: String) {
-        val addProductService = retrofit.create(AddProductService::class.java)
-        val productData = ProductData(qrId)
-
-        val call = addProductService.addProduct(productData)
-        call.enqueue(object : Callback<Map<String, String>> {
-            override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
-                if (response.isSuccessful) {
-                    Toast.makeText(this@MainActivity, "Producto agregado exitosamente", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "Error al agregar el producto", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-    private fun startQRScanner() {
-        val integrator = IntentIntegrator(this)
-        integrator.setOrientationLocked(false)
-        integrator.setPrompt("Escanea el código QR")
-        integrator.setBeepEnabled(false)
-        integrator.setCaptureActivity(ScanActivity::class.java)
-        integrator.addExtra("SCAN_WIDTH", 800)
-        integrator.addExtra("SCAN_HEIGHT", 800)
-        integrator.initiateScan()
-    }
-
+    @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (result != null) {
-            if (result.contents != null) {
-                val qrContent = result.contents
-                processQRContent(qrContent)
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            val result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+            if (result != null && result.contents != null) {
+                val scannedContent = result.contents
+                showConfirmationDialog(scannedContent)
             } else {
-                Toast.makeText(this, "No se pudo escanear el código QR", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    private fun processQRContent(qrContent: String) {
-        val retrofit: Retrofit = Retrofit.Builder()
-            .baseUrl("http://127.0.0.1:5000/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val addProductService = retrofit.create(AddProductService::class.java)
-
-        // Parsea el contenido del código QR
-        val qrData = qrContent.split("\n")
-        val qrId = qrData[0].split(": ")[1]
-
-        // Crea un Intent para pasar los datos a la InicioActivity
-        val intent = Intent(this@MainActivity, InicioActivity::class.java)
-        intent.putExtra("qr_id", qrId)
-        startActivity(intent)
+    private fun showConfirmationDialog(scannedContent: String) {
+        val context = this
+        AlertDialog.Builder(this)
+            .setMessage("Escaneaste el siguiente contenido: $scannedContent\n¿Deseas abrirlo?")
+            .setPositiveButton("Sí") { dialog, which ->
+                if (Patterns.WEB_URL.matcher(scannedContent).matches()) {
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(scannedContent))
+                    startActivity(browserIntent)
+                } else {
+                    val appIntent = packageManager.getLaunchIntentForPackage(scannedContent)
+                    if (appIntent != null) {
+                        startActivity(appIntent)
+                    } else {
+                        Toast.makeText(context, "La aplicación no está instalada en el dispositivo", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("No", null)
+            .show()
     }
 }
 
-class ScanActivity : com.journeyapps.barcodescanner.CaptureActivity()
-
 @Composable
-fun BoxWithBackgroundForAddProduct(content: @Composable () -> Unit) {
-    val backgroundImage = painterResource(id = R.drawable.fotofondo)
+fun BoxWithBackground(content: @Composable () -> Unit) {
+    val backgroundImage: Painter = painterResource(id = R.drawable.fotofondo) // Reemplaza "fotofondo" con el nombre de tu imagen
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(), // Esta línea hace que el contenedor Box ocupe todo el espacio disponible
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -204,5 +93,65 @@ fun BoxWithBackgroundForAddProduct(content: @Composable () -> Unit) {
             contentScale = ContentScale.FillBounds
         )
         content()
+    }
+}
+
+
+
+@Composable
+fun QRScannerAndButtons(activity: ComponentActivity) {
+    val context = LocalContext.current
+    val titleTextStyle = TextStyle(
+        fontSize = 30.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.White
+    )
+    Column(
+        modifier = Modifier
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Título "Banana Shop"
+        Text(
+            text = "Banana Shop",
+            style = titleTextStyle,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                val integrator = IntentIntegrator(activity)
+                integrator.setPrompt("Escanea un código QR")
+                integrator.initiateScan()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Escanear QR")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                val intent = Intent(context, InicioActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Ir a Inicio")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun QRScannerAndButtonsPreview() {
+    MyApplicationTheme {
+        QRScannerAndButtons(ComponentActivity())
     }
 }
