@@ -8,7 +8,6 @@ ventana = tk.Tk()
 ventana.title("Tabla Inventario de Productos")
 ventana.geometry("800x400")
 
-# Cargar y redimensionar el logo
 logo_path = "logo.png"
 image = Image.open(logo_path)
 image = image.resize((70, 70))
@@ -16,20 +15,18 @@ logo = ImageTk.PhotoImage(image)
 logo_label = tk.Label(ventana, image=logo)
 logo_label.grid(row=0, column=0, padx=20, pady=2, rowspan=2, sticky='nw')
 
-# Título Productos
 titulo_productos = tk.Label(ventana, text="Productos", font=("Helvetica", 16))
 titulo_productos.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
 
-# Función para abrir la ventana de ventas
+# Funcion para abrir la ventana de ventas
 def abrir_ventas():
     import tkinapp
     tkinapp.abrir_ventana_ventas()
 
-# Botón Tabla ventas
 ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas)
 ventas_btn.grid(row=0, column=3, padx=10, pady=10, sticky='ne')
 
-# Crear tabla de productos
+# tabla de productos
 columns = ("ID QR", "Tipo", "Talla", "Precio", "Modelo")
 tabla = ttk.Treeview(ventana, columns=columns, show="headings")
 
@@ -39,7 +36,7 @@ for col in columns:
 
 tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-# Ejemplo de productos en la tabla
+# ejemplos de productos (de momento)
 productos = [
     ("ID1", "pantalon", "L", "15000", "buzo"),
     ("ID2", "poleron", "L", "20000", ""),
@@ -53,7 +50,7 @@ btn_laterales = tk.Frame(ventana)
 btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
 # Botones laterales
-vender_btn = tk.Button(btn_laterales, text="Vender")
+vender_btn = tk.Button(btn_laterales, text="Vender Producto")
 vender_btn.pack(pady=10)
 
 agregar_btn = tk.Button(btn_laterales, text="Agregar producto")
