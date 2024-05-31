@@ -1,7 +1,7 @@
 import tkinter as tk
+import tkinapp
 from tkinter import ttk
 from PIL import Image, ImageTk
-import importlib
 
 # Ventana principal
 ventana = tk.Tk()
@@ -20,7 +20,6 @@ titulo_productos.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
 
 # Funcion para abrir la ventana de ventas
 def abrir_ventas():
-    import tkinapp
     tkinapp.abrir_ventana_ventas()
 
 ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas)
