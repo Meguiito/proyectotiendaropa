@@ -43,6 +43,9 @@ class VentanaVentas(tk.Tk):
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
 
-if __name__ == "__main__":
+def abrir_ventana_ventas():
     app = VentanaVentas()
     app.mainloop()
+
+if __name__ == "__main__":
+    abrir_ventana_ventas()

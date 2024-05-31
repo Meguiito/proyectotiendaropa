@@ -1,25 +1,32 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+import importlib
 
 # Ventana principal
 ventana = tk.Tk()
 ventana.title("Tabla Inventario de Productos")
 ventana.geometry("800x400")
 
-logo_path = "logo.png" 
+# Cargar y redimensionar el logo
+logo_path = "logo.png"
 image = Image.open(logo_path)
 image = image.resize((70, 70))
 logo = ImageTk.PhotoImage(image)
 logo_label = tk.Label(ventana, image=logo)
 logo_label.grid(row=0, column=0, padx=20, pady=2, rowspan=2, sticky='nw')
 
-# Titulo Productos
+# Título Productos
 titulo_productos = tk.Label(ventana, text="Productos", font=("Helvetica", 16))
 titulo_productos.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
 
-# Boton Tabla ventas
-ventas_btn = tk.Button(ventana, text="Tabla ventas")
+# Función para abrir la ventana de ventas
+def abrir_ventas():
+    import tkinapp
+    tkinapp.abrir_ventana_ventas()
+
+# Botón Tabla ventas
+ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas)
 ventas_btn.grid(row=0, column=3, padx=10, pady=10, sticky='ne')
 
 # Crear tabla de productos
@@ -32,7 +39,7 @@ for col in columns:
 
 tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-# Ejemplo de producotos en la tabla
+# Ejemplo de productos en la tabla
 productos = [
     ("ID1", "pantalon", "L", "15000", "buzo"),
     ("ID2", "poleron", "L", "20000", ""),
