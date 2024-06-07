@@ -20,7 +20,8 @@ titulo_productos.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
 
 # Funcion para abrir la ventana de ventas
 def abrir_ventas():
-    tkinapp.abrir_ventana_ventas()
+    ventana.withdraw()  
+    tkinapp.ventana_ventas(ventana)
 
 ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas)
 ventas_btn.grid(row=0, column=3, padx=10, pady=10, sticky='ne')
