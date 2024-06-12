@@ -26,11 +26,18 @@ class VentanaVentas(tk.Toplevel):
         self.logo_label.image = self.logo_tk  # Mantener referencia de la imagen
         self.logo_label.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
 
-        self.text_label = tk.Label(frame_superior, text="Ventas", font=("Arial", 24))
+        self.text_label = tk.Label(frame_superior, text="Ventas", font=("Helvetica", 20, "bold"))
         self.text_label.grid(row=0, column=1, sticky="nw", padx=350, pady=10)
 
         # Tabla en la fila inferior
         self.tabla = ttk.Treeview(contenedor_principal, columns=("id_venta", "id_qr_producto", "producto", "precio"), show='headings')
+
+        # Estilo para la tabla
+        style = ttk.Style()
+        style.theme_use('clam')
+        style.configure("Treeview", font=("Georgia", 12), background="white", foreground="black", fieldbackground="white")
+        style.configure("Treeview.Heading", font=("Georgia", 14, "bold"), foreground="black")
+
         self.tabla.heading("id_venta", text="ID Venta")
         self.tabla.heading("id_qr_producto", text="ID QR Producto")
         self.tabla.heading("producto", text="Producto")
@@ -44,15 +51,15 @@ class VentanaVentas(tk.Toplevel):
         self.tabla.grid(row=1, column=0, columnspan=2, sticky="nsew")
 
         # Botón cargar ventas
-        self.boton_cargar_ventas = tk.Button(contenedor_principal, text="Cargar Ventas", command=self.cargar_ventas)
+        self.boton_cargar_ventas = tk.Button(contenedor_principal, text="Cargar Ventas", command=self.cargar_ventas, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
         self.boton_cargar_ventas.grid(row=2, column=0, sticky="w", padx=10, pady=10)
 
         # Botón Productos más vendidos
-        self.boton_otro = tk.Button(contenedor_principal, text="Productos más vendidos", command=self.producto_mas_vendido)
+        self.boton_otro = tk.Button(contenedor_principal, text="Productos más vendidos", command=self.producto_mas_vendido, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
         self.boton_otro.grid(row=2, column=1, sticky="e", padx=10, pady=10)
 
         # Botón Tabla productos
-        self.boton_tabla_productos = tk.Button(contenedor_principal, text="Tabla Productos", command=self.Tabla_Producto)
+        self.boton_tabla_productos = tk.Button(contenedor_principal, text="Tabla Productos", command=self.Tabla_Producto, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
         self.boton_tabla_productos.grid(row=0, column=0, sticky="e", padx=10, pady=10, columnspan=2)
 
         # Configurar el contenedor principal para que las filas y columnas se expandan
