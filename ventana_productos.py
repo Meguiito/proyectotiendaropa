@@ -8,6 +8,7 @@ import requests
 ventana = tk.Tk()
 ventana.title("Tabla Inventario de Productos")
 ventana.geometry("800x600")
+ventana.attributes('-fullscreen', True)
 
 ventana.configure(bg='black')
  #Imagen de fondo
@@ -69,7 +70,7 @@ for pro in produc :
 for producto in productos:
     tabla.insert("", tk.END, values=producto)
 
-btn_laterales = tk.Frame(ventana , bg='black')
+btn_laterales = tk.Frame(ventana,bg='black' )
 btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
 vender_btn = tk.Button(btn_laterales, text="Vender Producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8)
