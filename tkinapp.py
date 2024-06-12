@@ -20,7 +20,7 @@ class VentanaVentas(tk.Toplevel):
 
         # Cargar la imagen del logo
         self.logo = Image.open("logo.png")
-        self.logo = self.logo.resize((60, 60), Image.ANTIALIAS)
+        self.logo = self.logo.resize((60, 60), Image.LANCZOS)
         self.logo_tk = ImageTk.PhotoImage(self.logo)
         self.logo_label = tk.Label(contenedor_principal, image=self.logo_tk)
         self.logo_label.image = self.logo_tk  # Mantener referencia de la imagen
@@ -61,7 +61,7 @@ class VentanaVentas(tk.Toplevel):
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://192.168.0.12:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
@@ -76,11 +76,11 @@ class VentanaVentas(tk.Toplevel):
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://192.168.0.12:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
-            productos = [venta['producto'] for venta in ventas]
+            productos = [venta['Producto'] for venta in ventas]
             precios = [venta['precio'] for venta in ventas]
             contador_productos = Counter(productos)
             producto_mas_vendido, cantidad = contador_productos.most_common(1)[0]

@@ -23,7 +23,10 @@ def get_productos():
         productos.append({
             '_id': str(producto['_id']),
             'name': producto['Producto'],
-            'price': producto['Precio']
+            'price': producto['Precio'],
+            'qr_id': producto['qr_id'],
+            'talla': producto['talla'],
+            'tipo': producto['tipo']
         })
     return jsonify(productos)
 

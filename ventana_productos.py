@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinapp
 from tkinter import ttk
 from PIL import Image, ImageTk
+import requests
 
 # Ventana principal
 ventana = tk.Tk()
@@ -9,6 +10,14 @@ ventana.title("Tabla Inventario de Productos")
 ventana.geometry("800x400")
 
 ventana.configure(bg='black')
+ #Imagen de fondo
+imagen_fondo = "fondo.png"
+fondo = Image.open(imagen_fondo) 
+
+fondo_ima = ImageTk.PhotoImage(fondo)
+fondo_label = tk.Label(ventana,image=fondo_ima)
+fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 logo_path = "logo.png"
 image = Image.open(logo_path)
 image = image.resize((70, 70))
@@ -46,17 +55,22 @@ for col in columns:
 
 tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-# ejemplos de productos (de momento)
-productos = [
-    ("ID1", "pantalon", "L", "15000", "buzo"),
-    ("ID2", "poleron", "L", "20000", ""),
-    ("ID3", "camiseta", "XL", "10000", "")
-]
+# Productos de la base de datos 
+respuesta = requests.get("http://172.16.54.10:5000/productos")
+respuesta.raise_for_status()
+produc = respuesta.json()
+print(produc)
+
+
+productos = []
+
+for pro in produc : 
+    productos.append((pro["qr_id"],pro["name"],pro["talla"],pro["price"],pro["tipo"]))
 
 for producto in productos:
     tabla.insert("", tk.END, values=producto)
 
-btn_laterales = tk.Frame(ventana,bg='black' )
+btn_laterales = tk.Frame(ventana , bg='black')
 btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
 # Botones laterales
