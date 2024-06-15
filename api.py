@@ -20,6 +20,21 @@ def generar_id_venta():
 
 # Routes
 
+@app.route('/productos', methods=['GET'])
+@cross_origin()
+def get_productos():
+    productos = []
+    for producto in productos_collection.find():
+        productos.append({
+            '_id': str(producto['_id']),
+            'name': producto['Producto'],
+            'price': producto['Precio'],
+            'qr_id': producto['qr_id'],
+            'talla': producto['talla'],
+            'tipo': producto['tipo']
+        })
+    return jsonify(productos)
+
 @app.route('/productos/qr/<qr_id>', methods=['GET'])
 @cross_origin()
 def get_producto_by_qr_id(qr_id):
@@ -59,18 +74,6 @@ def add_producto_from_qr():
     }
     producto_id = productos_collection.insert_one(producto_data).inserted_id
     return jsonify({'_id': str(producto_id)}), 201
-
-@app.route('/productos', methods=['GET'])
-@cross_origin()
-def get_productos():
-    productos = []
-    for producto in productos_collection.find():
-        productos.append({
-            '_id': str(producto['_id']),
-            'name': producto['Producto'],
-            'price': producto['Precio']
-        })
-    return jsonify(productos)
 
 @app.route('/productos/<id>', methods=['GET'])
 @cross_origin()
