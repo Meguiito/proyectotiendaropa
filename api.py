@@ -43,11 +43,13 @@ def get_producto_by_qr_id(qr_id):
         return jsonify({
             '_id': str(producto['_id']),
             'Producto': producto['Producto'],
-            'Precio': producto['Precio']
+            'Precio': producto['Precio'],
+            'talla': producto['talla'],
+            'tipo': producto['tipo']
         })
     else:
         return jsonify({'error': 'Producto no encontrado'}), 404
-
+    
 @app.route('/productos/<id>', methods=['PUT'])
 @cross_origin()
 def update_producto(id):
