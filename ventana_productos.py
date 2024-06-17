@@ -56,7 +56,7 @@ for col in columns:
 tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
 # Productos de la base de datos 
-respuesta = requests.get("http://172.16.54.10:5000/productos")
+respuesta = requests.get("http://192.168.1.4:5000/productos")
 respuesta.raise_for_status()
 produc = respuesta.json()
 print(produc)
