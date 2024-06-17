@@ -55,20 +55,19 @@ for col in columns:
 
 tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-# Productos de la base de datos 
-respuesta = requests.get("http://192.168.1.4:5000/productos")
-respuesta.raise_for_status()
-produc = respuesta.json()
-print(produc)
+def actualizar_productos():
+    for fila in tabla.get_children():
+        tabla.delete(fila)
+    respuesta = requests.get("http://192.168.0.6:5000/productos")
+    respuesta.raise_for_status()
+    produc = respuesta.json()
+    productos = []
+    for pro in produc : 
+        productos.append((pro["qr_id"],pro["name"],pro["talla"],pro["price"],pro["tipo"]))
+    for producto in productos:
+        tabla.insert("", tk.END, values=producto)
 
-
-productos = []
-
-for pro in produc : 
-    productos.append((pro["qr_id"],pro["name"],pro["talla"],pro["price"],pro["tipo"]))
-
-for producto in productos:
-    tabla.insert("", tk.END, values=producto)
+actualizar_productos()
 
 btn_laterales = tk.Frame(ventana,bg='black' )
 btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
@@ -82,7 +81,70 @@ agregar_btn.pack(pady=10)
 buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 10),bg='light grey', fg='black', relief='ridge', borderwidth=8)
 buscar_btn.pack(pady=10)
 
-editar_btn = tk.Button(btn_laterales, text="Editar producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+def ventana_ingresar_id():
+    ventana_id = tk.Toplevel()
+    ventana_id.title("Ingresar ID del Producto")
+    ventana_id.geometry("300x100")
+
+    tk.Label(ventana_id, text="ID del Producto:").pack(pady=5)
+    id_entry = tk.Entry(ventana_id)
+    id_entry.pack(pady=5)
+
+    tk.Button(ventana_id, text="Buscar", command=lambda: buscar_producto(id_entry.get(), ventana_id)).pack(pady=5)
+
+def buscar_producto(qr_id, ventana_id):
+    response = requests.get(f"http://192.168.0.6:5000/productos/qr/{qr_id}")
+    if response.status_code == 200:
+        producto = response.json()
+        ventana_id.destroy()
+        ventana_editar(producto)
+    else:
+        tk.messagebox.showerror("Error", "Producto no encontrado")
+
+def ventana_editar(producto):
+    ventana_editar = tk.Toplevel()
+    ventana_editar.title("Editar Producto")
+    ventana_editar.geometry("400x300")
+
+    tk.Label(ventana_editar, text="Producto:").pack(pady=5)
+    producto_entry = tk.Entry(ventana_editar)
+    producto_entry.pack(pady=5)
+    producto_entry.insert(0, producto['Producto'])
+
+    tk.Label(ventana_editar, text="Precio:").pack(pady=5)
+    precio_entry = tk.Entry(ventana_editar)
+    precio_entry.pack(pady=5)
+    precio_entry.insert(0, producto['Precio'])
+
+    tk.Label(ventana_editar, text="Talla:").pack(pady=5)
+    talla_entry = tk.Entry(ventana_editar)
+    talla_entry.pack(pady=5)
+    talla_entry.insert(0, producto['talla'])
+
+    tk.Label(ventana_editar, text="Tipo:").pack(pady=5)
+    tipo_entry = tk.Entry(ventana_editar)
+    tipo_entry.pack(pady=5)
+    tipo_entry.insert(0, producto['tipo'])
+
+    tk.Button(ventana_editar, text="Actualizar", command=lambda: actualizar_producto(producto['_id'], producto_entry.get(), precio_entry.get(), talla_entry.get(), tipo_entry.get(), ventana_editar)).pack(pady=5)
+
+
+def actualizar_producto(id, producto, precio, talla, tipo, ventana_editar):
+    data = {
+        "Producto": producto,
+        "Precio": precio,
+        "talla": talla,
+        "tipo": tipo
+    }
+    respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
+    if respuesta.status_code == 200:
+        tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
+        ventana_editar.destroy()
+        actualizar_productos()
+    else:
+        tk.messagebox.showerror("Error", "No se pudo actualizar el producto")        
+
+editar_btn = tk.Button(btn_laterales, text="Editar producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8, command=ventana_ingresar_id)
 editar_btn.pack(pady=10)
 
 ventana.grid_rowconfigure(1, weight=1)
