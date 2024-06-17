@@ -3,14 +3,15 @@ from tkinter import ttk, messagebox
 import requests
 from collections import Counter
 from PIL import Image, ImageTk
+import ventana_productos
 
 class VentanaVentas(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
-
         self.title("Ventana de Ventas")
         self.geometry("800x600")
         self.attributes('-fullscreen', True)
+        self.parent = parent  # Guardar referencia a la ventana principal
         # Contenedor principal
         contenedor_principal = tk.Frame(self)
         contenedor_principal.pack(fill=tk.BOTH, expand=True)
@@ -59,7 +60,7 @@ class VentanaVentas(tk.Toplevel):
         self.boton_otro.grid(row=2, column=1, sticky="e", padx=10, pady=10)
 
         # Botón Tabla productos
-        self.boton_tabla_productos = tk.Button(contenedor_principal, text="Tabla Productos", command=self.Tabla_Producto, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+        self.boton_tabla_productos = tk.Button(contenedor_principal, text="Tabla Productos", command=lambda: ventana_productos.abrir_ventana_productos(self), font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
         self.boton_tabla_productos.grid(row=0, column=0, sticky="e", padx=10, pady=10, columnspan=2)
 
         # Configurar el contenedor principal para que las filas y columnas se expandan
@@ -68,7 +69,7 @@ class VentanaVentas(tk.Toplevel):
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://172.16.54.10:5000/ventas")
+            response = requests.get("http://192.168.0.6:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
@@ -83,7 +84,7 @@ class VentanaVentas(tk.Toplevel):
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://172.16.54.10:5000/ventas")
+            response = requests.get("http://192.168.0.6:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
@@ -96,14 +97,11 @@ class VentanaVentas(tk.Toplevel):
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
 
-    def Tabla_Producto(self):
-        pass
-
 def ventana_ventas(parent):
     VentanaVentas(parent)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.withdraw() 
+    root.withdraw()
     ventana_ventas(root)
     root.mainloop()
