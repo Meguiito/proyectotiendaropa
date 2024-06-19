@@ -88,7 +88,14 @@ def abrir_ventana_productos(ventana_principal):
         ventana_id = tk.Toplevel()
         ventana_id.title("Ingresar ID del Producto")
         ventana_id.geometry("300x100")
-
+        
+        # Imagen de fondo
+        fondo = Image.open("fondo.png")
+        fondo_ima = ImageTk.PhotoImage(fondo)
+        fondo_label = tk.Label(ventana_id, image=fondo_ima)
+        fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
+        fondo_label.image = fondo_ima
+        
         tk.Label(ventana_id, text="ID del Producto:").pack(pady=5)
         id_entry = tk.Entry(ventana_id)
         id_entry.pack(pady=5)
@@ -108,6 +115,13 @@ def abrir_ventana_productos(ventana_principal):
         ventana_editar = tk.Toplevel()
         ventana_editar.title("Editar Producto")
         ventana_editar.geometry("400x300")
+        
+         # Imagen de fondo
+        fondo = Image.open("fondo.png")
+        fondo_ima = ImageTk.PhotoImage(fondo)
+        fondo_label = tk.Label(ventana_editar, image=fondo_ima)
+        fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
+        fondo_label.image = fondo_ima
 
         tk.Label(ventana_editar, text="Producto:").pack(pady=5)
         producto_entry = tk.Entry(ventana_editar)
