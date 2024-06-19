@@ -114,36 +114,58 @@ def abrir_ventana_productos(ventana_principal):
     def ventana_editar(producto):
         ventana_editar = tk.Toplevel()
         ventana_editar.title("Editar Producto")
-        ventana_editar.geometry("400x300")
+        ventana_editar.attributes('-fullscreen', True)
         
-         # Imagen de fondo
         fondo = Image.open("fondo.png")
         fondo_ima = ImageTk.PhotoImage(fondo)
         fondo_label = tk.Label(ventana_editar, image=fondo_ima)
         fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
         fondo_label.image = fondo_ima
-
-        tk.Label(ventana_editar, text="Producto:").pack(pady=5)
-        producto_entry = tk.Entry(ventana_editar)
-        producto_entry.pack(pady=5)
+        
+        logo_path = "logo.png"
+        logo_image = Image.open(logo_path)
+        logo_image = logo_image.resize((120, 120))
+        logo = ImageTk.PhotoImage(logo_image)
+        logo_label = tk.Label(ventana_editar, image=logo, bg='white')
+        logo_label.grid(row=0, column=0, padx=30, pady=30, rowspan=2, sticky='nw')
+        logo_label.image = logo
+        
+        frame_central = tk.Frame(ventana_editar, bg='#5D5959')
+        frame_central.place(relx=0.5, rely=0.5, anchor='center')
+        
+        titulo_label = tk.Label(frame_central, text="Editar producto", font=("Helvetica", 24), bg='white')
+        titulo_label.grid(row=0, column=0, columnspan=2, pady=20)
+        
+        tk.Label(frame_central, text="Producto:", font=("Helvetica", 16), bg='#5D5959', fg='white').grid(row=1, column=0, pady=10, padx=10)
+        producto_entry = tk.Entry(frame_central, font=("Helvetica", 16))
+        producto_entry.grid(row=1, column=1, pady=10, padx=10)
         producto_entry.insert(0, producto['Producto'])
 
-        tk.Label(ventana_editar, text="Precio:").pack(pady=5)
-        precio_entry = tk.Entry(ventana_editar)
-        precio_entry.pack(pady=5)
+        tk.Label(frame_central, text="Precio:", font=("Helvetica", 16), bg='#5D5959', fg='white').grid(row=2, column=0, pady=10, padx=10)
+        precio_entry = tk.Entry(frame_central, font=("Helvetica", 16))
+        precio_entry.grid(row=2, column=1, pady=10, padx=10)
         precio_entry.insert(0, producto['Precio'])
 
-        tk.Label(ventana_editar, text="Talla:").pack(pady=5)
-        talla_entry = tk.Entry(ventana_editar)
-        talla_entry.pack(pady=5)
+        tk.Label(frame_central, text="Talla:", font=("Helvetica", 16), bg='#5D5959', fg='white').grid(row=3, column=0, pady=10, padx=10)
+        talla_entry = tk.Entry(frame_central, font=("Helvetica", 16))
+        talla_entry.grid(row=3, column=1, pady=10, padx=10)
         talla_entry.insert(0, producto['talla'])
 
-        tk.Label(ventana_editar, text="Tipo:").pack(pady=5)
-        tipo_entry = tk.Entry(ventana_editar)
-        tipo_entry.pack(pady=5)
+        tk.Label(frame_central, text="Tipo:", font=("Helvetica", 16), bg='#5D5959', fg='white').grid(row=4, column=0, pady=10, padx=10)
+        tipo_entry = tk.Entry(frame_central, font=("Helvetica", 16))
+        tipo_entry.grid(row=4, column=1, pady=10, padx=10)
         tipo_entry.insert(0, producto['tipo'])
 
-        tk.Button(ventana_editar, text="Actualizar", command=lambda: actualizar_producto(producto['_id'], producto_entry.get(), precio_entry.get(), talla_entry.get(), tipo_entry.get(), ventana_editar)).pack(pady=5)
+        tk.Button(frame_central, text="Actualizar", font=("Helvetica", 16), command=lambda: actualizar_producto(producto['_id'], producto_entry.get(), precio_entry.get(), talla_entry.get(), tipo_entry.get(), ventana_editar)).grid(row=5, column=0, columnspan=2, pady=20)
+        
+        # Función para cerrar la ventana
+        def cerrar_ventana(event):
+            ventana_editar.destroy()
+        
+        # Vincular la tecla Escape para cerrar la ventana
+        ventana_editar.bind('<Escape>', cerrar_ventana)
+        
+        ventana_editar.mainloop()
 
     def actualizar_producto(id, producto, precio, talla, tipo, ventana_editar):
         data = {
