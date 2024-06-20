@@ -25,13 +25,13 @@ def abrir_ventana_productos(ventana_principal):
 
     logo_path = "logo.png"
     logo_image = Image.open(logo_path)
-    logo_image = logo_image.resize((70, 70))
+    logo_image = logo_image.resize((100, 100))
     logo = ImageTk.PhotoImage(logo_image)
     logo_label = tk.Label(ventana, image=logo, bg='white')
-    logo_label.grid(row=0, column=0, padx=20, pady=2, rowspan=2, sticky='nw')
+    logo_label.grid(row=0, column=0, padx=20, pady=10, rowspan=2, sticky='nw')
 
-    titulo_productos = tk.Label(ventana, text="Productos", font=("Helvetica", 20, "bold"), bg='black', fg='#FFD700')
-    titulo_productos.grid(row=0, column=2, columnspan=2, padx=10, pady=10)
+    titulo_productos = tk.Label(ventana, text="Productos", font=("Helvetica", 28, "bold"), bg='black', fg='#FFD700')
+    titulo_productos.grid(row=0, column=1, columnspan=3, padx=20, pady=20, sticky='n')
 
     #Funcion para abrir la ventana de ventas
     def abrir_ventas():
@@ -76,13 +76,13 @@ def abrir_ventana_productos(ventana_principal):
     btn_laterales = tk.Frame(ventana, bg='black')
     btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
-    vender_btn = tk.Button(btn_laterales, text="Vender Producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    vender_btn = tk.Button(btn_laterales, text="Vender Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     vender_btn.pack(pady=10)
 
-    agregar_btn = tk.Button(btn_laterales, text="Agregar producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    agregar_btn = tk.Button(btn_laterales, text="Agregar producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     agregar_btn.pack(pady=10)
 
-    buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     buscar_btn.pack(pady=10)
 
     def buscar_producto(qr_id, ventana_id):
@@ -170,10 +170,10 @@ def abrir_ventana_productos(ventana_principal):
             producto = item['values']
             ventana_editar(producto)
         else:
-            messagebox.showwarning("Seleccione un producto para editar.")
+            messagebox.showwarning("Advertencia", "Seleccione un producto para editar.")
     
-    editar_btn = tk.Button(btn_laterales, text="Editar producto", font=("Helvetica", 10), bg='light grey', fg='black', relief='ridge', borderwidth=8, 
-                           command=editar_producto_seleccionado)
+    editar_btn = tk.Button(btn_laterales, text="Editar producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8, 
+                       command=editar_producto_seleccionado)
     editar_btn.pack(pady=10)
     
     # Función para cerrar la ventana
