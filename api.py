@@ -66,13 +66,17 @@ def add_producto_from_qr():
     qr_id = data.get("qr_id")
     producto = data.get("producto")
     precio = data.get("precio")
+    talla = data.get("talla")
+    tipo = data.get("tipo")
     existing_producto = productos_collection.find_one({"qr_id": qr_id})
     if existing_producto:
         return jsonify({'error': 'El qr_id ya existe en la base de datos'}), 400
     producto_data = {
         "Producto": producto,
         "Precio": precio,
-        "qr_id": qr_id
+        "qr_id": qr_id,
+        "talla": talla,
+        "tipo": tipo            
     }
     producto_id = productos_collection.insert_one(producto_data).inserted_id
     return jsonify({'_id': str(producto_id)}), 201

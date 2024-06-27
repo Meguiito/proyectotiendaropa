@@ -58,7 +58,7 @@ tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 def actualizar_productos():
     for fila in tabla.get_children():
         tabla.delete(fila)
-    respuesta = requests.get("http://192.168.0.6:5000/productos")
+    respuesta = requests.get("http://192.168.4.47:5000/productos")
     respuesta.raise_for_status()
     produc = respuesta.json()
     productos = []
@@ -93,7 +93,7 @@ def ventana_ingresar_id():
     tk.Button(ventana_id, text="Buscar", command=lambda: buscar_producto(id_entry.get(), ventana_id)).pack(pady=5)
 
 def buscar_producto(qr_id, ventana_id):
-    response = requests.get(f"http://192.168.0.6:5000/productos/qr/{qr_id}")
+    response = requests.get(f"http://192.168.4.47:5000/productos/qr/{qr_id}")
     if response.status_code == 200:
         producto = response.json()
         ventana_id.destroy()
@@ -136,7 +136,7 @@ def actualizar_producto(id, producto, precio, talla, tipo, ventana_editar):
         "talla": talla,
         "tipo": tipo
     }
-    respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
+    respuesta = requests.put(f"http://192.168.4.47:5000/productos/{id}", json=data)
     if respuesta.status_code == 200:
         tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
         ventana_editar.destroy()

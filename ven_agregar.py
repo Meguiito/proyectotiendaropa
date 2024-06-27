@@ -6,9 +6,14 @@ ventana = tk.Tk()
 ventana.title("Agregar producto")
 ventana.attributes('-fullscreen', True)
 
+#Funcion agregar producto
+def agregar_producto():
+    pass
+
 # Imagen de fondo
 ima_f = "fondo.png"
 fondo = Image.open(ima_f)
+
 fondo_i = ImageTk.PhotoImage(fondo)
 fondo_label = tk.Label(ventana, image=fondo_i)
 fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
@@ -54,7 +59,11 @@ entry4.grid(row=8, column=0, pady=10, padx=10)
 enviar_button = tk.Button(frame_central, text="Enviar", font=("Helvetica", 16))
 enviar_button.grid(row=9, column=0, pady=20)
 
-# Función para cerrar la ventana
+# Botón Cerrar en la esquina superior derecha
+cerrar_button = tk.Button(ventana, text="Cerrar", font=("Helvetica", 12))
+cerrar_button.place(relx=1.0, rely=0.0, anchor='ne', x=-10, y=10)
+
+# Función para cerrar la ventana con la tecla Escape
 def cerrar_ventana(event):
     ventana.destroy()
 
@@ -62,3 +71,7 @@ def cerrar_ventana(event):
 ventana.bind('<Escape>', cerrar_ventana)
 
 ventana.mainloop()
+
+#
+
+
