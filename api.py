@@ -3,6 +3,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from pymongo import MongoClient
 from bson import ObjectId
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
 
 # Instantiation
 app = Flask(__name__)
@@ -54,10 +56,19 @@ def get_producto_by_qr_id(qr_id):
 @cross_origin()
 def update_producto(id):
     data = request.json
-    if '_id' in data:
-        del data['_id']
-    productos_collection.update_one({'_id': ObjectId(id)}, {"$set": data})
-    return jsonify({'message': 'Producto actualizado'}), 200
+        
+    # Chequea si el ID es un ObjectId válido
+    if len(id) == 24 and all(c in "0123456789abcdef" for c in id):
+        filter_criteria = {'_id': ObjectId(id)}
+    else:
+        filter_criteria = {'qr_id': id}
+        
+    result = productos_collection.update_one(filter_criteria, {"$set": data})
+        
+    if result.matched_count > 0:
+        return jsonify({"mensaje": "Producto actualizado correctamente"}), 200
+    else:
+        return jsonify({"error": "Producto no encontrado"}), 404
 
 @app.route('/agregar-producto', methods=['POST'])
 @cross_origin()
