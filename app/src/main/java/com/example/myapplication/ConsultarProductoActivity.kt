@@ -4,26 +4,23 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Typography
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import retrofit2.Call
@@ -37,7 +34,9 @@ import retrofit2.http.Path
 data class Producto(
     val _id: String,
     val Producto: String,
-    val Precio: Double
+    val Precio: Double,
+    val talla: String,
+    val tipo: String
 )
 
 interface ProductoService {
@@ -73,19 +72,11 @@ class ConsultarProductoActivity : ComponentActivity() {
             fetchProductDetails(qrId, setProduct)
         }
 
-        val typography = Typography(
-            headlineLarge = TextStyle(
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                lineHeight = 40.sp,
-                letterSpacing = 0.sp
-            ),
-            bodyLarge = TextStyle(
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                letterSpacing = 0.5.sp
-            )
+        val typography = TextStyle(
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            lineHeight = 40.sp,
+            letterSpacing = 0.sp
         )
 
         Box(
@@ -100,21 +91,33 @@ class ConsultarProductoActivity : ComponentActivity() {
                 if (product != null) {
                     Text(
                         text = "Producto: ${product.Producto}",
+                        style = typography,
                         color = Color.White,
-                        style = typography.headlineLarge,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     Text(
                         text = "Precio: ${product.Precio}",
+                        style = typography,
                         color = Color.White,
-                        style = typography.headlineLarge,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "Talla: ${product.talla}",
+                        style = typography,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = "Tipo: ${product.tipo}",
+                        style = typography,
+                        color = Color.White,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 } else {
                     Text(
                         text = "Buscando producto...",
-                        color = Color.White,
-                        style = typography.headlineLarge
+                        style = typography,
+                        color = Color.White
                     )
                 }
             }

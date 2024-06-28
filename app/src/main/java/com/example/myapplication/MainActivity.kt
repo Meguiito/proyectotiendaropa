@@ -52,7 +52,7 @@ interface AddProductService {
     fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
 
     @POST("agregar-producto")
-    fun addProductFromQR(@Body productData: NewClassName): Call<Map<String, String>>
+    fun addProductFromQR(@Body productData: NewProduct): Call<Map<String, String>>
 
     @GET("productos/qr/{qr_id}")
     fun getProductoByQrId(@Path("qr_id") qrId: String): Call<Producto>
