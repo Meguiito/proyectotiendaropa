@@ -36,7 +36,9 @@ import retrofit2.http.Path
 data class VentaData(
     val qr_id: String,
     val producto: String,
-    val precio: Double
+    val precio: Double,
+    val talla: String,
+    val tipo: String
 )
 
 interface VentasService {
@@ -105,7 +107,7 @@ class VentasActivity : ComponentActivity() {
             override fun onResponse(call: Call<Producto>, response: Response<Producto>) {
                 if (response.isSuccessful && response.body() != null) {
                     val producto = response.body()!!
-                    val ventaData = VentaData(qrId, producto.Producto, producto.Precio)
+                    val ventaData = VentaData(qrId, producto.Producto, producto.Precio, producto.talla, producto.tipo)
 
                     val ventasService = retrofit.create(VentasService::class.java)
                     ventasService.addVenta(ventaData).enqueue(object : Callback<Map<String, String>> {
