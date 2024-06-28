@@ -18,8 +18,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -28,8 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.google.zxing.integration.android.IntentIntegrator
 import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -41,20 +41,22 @@ data class NewClassName(
     val qr_id: String,
     val producto: String,
     val precio: Double
-
 )
+
 data class ProductData(
     val qr_id: String
 )
+
 interface AddProductService {
     @POST("productos")
     fun addProduct(@Body productData: ProductData): Call<Map<String, String>>
+
     @POST("agregar-producto")
     fun addProductFromQR(@Body productData: NewClassName): Call<Map<String, String>>
+
     @GET("productos/qr/{qr_id}")
     fun getProductoByQrId(@Path("qr_id") qrId: String): Call<Producto>
 }
-
 
 class MainActivity : ComponentActivity() {
     private val retrofit: Retrofit by lazy {
@@ -75,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun AddProductScreen() {
-        val (qrId, setQrId) = remember { mutableStateOf("") }
+        var qrId by remember { mutableStateOf("") }
 
         BoxWithBackgroundForAddProduct {
             Column(
@@ -87,7 +89,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 TextField(
                     value = qrId,
-                    onValueChange = { setQrId(it) },
+                    onValueChange = { qrId = it },
                     label = { Text("Ingresa el Código QR") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -98,8 +100,11 @@ class MainActivity : ComponentActivity() {
 
                 Button(
                     onClick = {
-                        addProduct(qrId)
-                        setQrId("")
+                        if (qrId.isNotBlank()) {
+                            navigateToInicio(qrId)
+                        } else {
+                            Toast.makeText(this@MainActivity, "Por favor ingresa un código QR", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -118,30 +123,8 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
             }
         }
-    }
-
-
-    private fun addProduct(qrId: String) {
-        val addProductService = retrofit.create(AddProductService::class.java)
-        val productData = ProductData(qrId)
-
-        val call = addProductService.addProduct(productData)
-        call.enqueue(object : Callback<Map<String, String>> {
-            override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
-                if (response.isSuccessful) {
-                    Toast.makeText(this@MainActivity, "Producto agregado exitosamente", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "Error al agregar el producto", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
-                Toast.makeText(this@MainActivity, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 
     private fun startQRScanner() {
@@ -160,7 +143,7 @@ class MainActivity : ComponentActivity() {
         if (result != null) {
             if (result.contents != null) {
                 val qrContent = result.contents
-                processQRContent(qrContent)
+                navigateToInicio(qrContent)
             } else {
                 Toast.makeText(this, "No se pudo escanear el código QR", Toast.LENGTH_SHORT).show()
             }
@@ -169,19 +152,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun processQRContent(qrContent: String) {
-        val retrofit: Retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.1.13:5000/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val addProductService = retrofit.create(AddProductService::class.java)
-
-        // Parsea el contenido del código QR
-        val qrData = qrContent.split("\n")
-        val qrId = qrData[0].split(": ")[1]
-
-        // Crea un Intent para pasar los datos a la InicioActivity
+    private fun navigateToInicio(qrId: String) {
         val intent = Intent(this@MainActivity, InicioActivity::class.java)
         intent.putExtra("qr_id", qrId)
         startActivity(intent)
