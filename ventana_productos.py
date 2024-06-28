@@ -85,15 +85,71 @@ def abrir_ventana_productos(ventana_principal):
     buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     buscar_btn.pack(pady=10)
 
-    def buscar_producto(qr_id, ventana_id):
-        response = requests.get(f"http://192.168.0.6:5000/productos/qr/{qr_id}")
-        if response.status_code == 200:
-            producto = response.json()
-            ventana_id.destroy()
-            ventana_editar(producto)
-        else:
-            tk.messagebox.showerror("Error", "Producto no encontrado")
+    def ver_producto(producto, ventana_principal):
+        ventana_ver = tk.Toplevel()
+        ventana_ver.title("Información del Producto")
+        ventana_ver.attributes('-fullscreen', True)
+        
+        fondo = Image.open("fondo.png")
+        fondo_ima = ImageTk.PhotoImage(fondo)
+        fondo_label = tk.Label(ventana_ver, image=fondo_ima)
+        fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
+        fondo_label.image = fondo_ima
+        
+        logo_path = "logo.png"
+        logo_image = Image.open(logo_path)
+        logo_image = logo_image.resize((120, 120))
+        logo = ImageTk.PhotoImage(logo_image)
+        logo_label = tk.Label(ventana_ver, image=logo, bg='white')
+        logo_label.grid(row=0, column=0, padx=30, pady=30, rowspan=2, sticky='nw')
+        logo_label.image = logo
+        
+        frame_central = tk.Frame(ventana_ver, bg='#5D5959', bd=2, relief=tk.RIDGE)
+        frame_central.place(relx=0.5, rely=0.5, anchor='center')
+        
+        titulo_label = tk.Label(frame_central, text="Información del Producto", font=("Helvetica", 24), bg='#5D5959', fg='white', pady=10)
+        titulo_label.grid(row=0, column=0, columnspan=2)
+        
+        tk.Label(frame_central, text="Producto:", font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w', width=15).grid(row=1, column=0, pady=5, padx=5, sticky='w')
+        producto_label = tk.Label(frame_central, text=producto['Producto'], font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w')
+        producto_label.grid(row=1, column=1, pady=5, padx=5, sticky='w')
 
+        tk.Label(frame_central, text="Precio:", font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w', width=15).grid(row=2, column=0, pady=5, padx=5, sticky='w')
+        precio_label = tk.Label(frame_central, text=producto['Precio'], font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w')
+        precio_label.grid(row=2, column=1, pady=5, padx=5, sticky='w')
+
+        tk.Label(frame_central, text="Talla:", font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w', width=15).grid(row=3, column=0, pady=5, padx=5, sticky='w')
+        talla_label = tk.Label(frame_central, text=producto['talla'], font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w')
+        talla_label.grid(row=3, column=1, pady=5, padx=5, sticky='w')
+
+        tk.Label(frame_central, text="Tipo:", font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w', width=15).grid(row=4, column=0, pady=5, padx=5, sticky='w')
+        tipo_label = tk.Label(frame_central, text=producto['tipo'], font=("Helvetica", 16), bg='#5D5959', fg='white', anchor='w')
+        tipo_label.grid(row=4, column=1, pady=5, padx=5, sticky='w')
+        # Botón de regresar
+        regresar_btn = tk.Button(frame_central, text="Regresar", font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8,
+                                 command=lambda: regresar(ventana_ver, ventana_principal))
+        regresar_btn.grid(row=5, column=0, columnspan=2, pady=20)
+
+    def regresar(ventana_ver, ventana_principal):
+        ventana_ver.destroy()
+        ventana_principal.deiconify()
+
+    def obtener_producto_seleccionado():
+        selected_item = tabla.selection()
+        if selected_item:
+            valores = tabla.item(selected_item)["values"]
+            producto = {
+                "Producto": valores[1],
+                "Precio": valores[3],
+                "talla": valores[2],
+                "tipo": valores[4],
+                "ID QR": valores[0]
+            }
+            ver_producto(producto, ventana)
+        else:
+            tk.messagebox.showwarning("Selecciona un producto primero")
+    buscar_btn.config(command=obtener_producto_seleccionado)
+           
     def ventana_editar(producto):
         ventana_editar = tk.Toplevel()
         ventana_editar.title("Editar Producto")
