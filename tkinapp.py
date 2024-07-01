@@ -9,7 +9,7 @@ class VentanaVentas(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Ventana de Ventas")
-        self.geometry("800x600")
+
         self.attributes('-fullscreen', True)
         self.parent = parent  # Guardar referencia a la ventana principal
         # Contenedor principal
@@ -69,7 +69,7 @@ class VentanaVentas(tk.Toplevel):
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://192.168.0.6:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
@@ -84,7 +84,7 @@ class VentanaVentas(tk.Toplevel):
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://192.168.0.6:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 

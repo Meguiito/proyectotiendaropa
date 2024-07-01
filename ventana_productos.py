@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 import requests
+import ven_agregar
+import Ventana_ventas
 
 def abrir_ventana_productos(ventana_principal):
     ventana_principal.withdraw() 
@@ -11,7 +13,6 @@ def abrir_ventana_productos(ventana_principal):
     # Ventana principal
     ventana = tk.Toplevel()
     ventana.title("Tabla Inventario de Productos")
-    ventana.geometry("800x600")
     ventana.attributes('-fullscreen', True)
 
     ventana.configure(bg='black')
@@ -38,6 +39,14 @@ def abrir_ventana_productos(ventana_principal):
         ventana.withdraw()
         tkinapp.ventana_ventas(ventana)
 
+    def abrir_agregar():
+        ventana.withdraw()
+        ven_agregar.abrir_ventana_agregar(ventana)
+
+    def abrir_ventas():
+        ventana.withdraw()
+        Ventana_ventas.abrir_ventana_ventas(ventana)
+
     ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     ventas_btn.grid(row=0, column=3, padx=10, pady=10, sticky='ne')
 
@@ -62,7 +71,7 @@ def abrir_ventana_productos(ventana_principal):
     def actualizar_productos():
         for fila in tabla.get_children():
             tabla.delete(fila)
-        respuesta = requests.get("http://192.168.0.6:5000/productos")
+        respuesta = requests.get("http://192.168.1.4:5000/productos")
         respuesta.raise_for_status()
         produc = respuesta.json()
         productos = []
@@ -76,17 +85,17 @@ def abrir_ventana_productos(ventana_principal):
     btn_laterales = tk.Frame(ventana, bg='black')
     btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
-    vender_btn = tk.Button(btn_laterales, text="Vender Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    vender_btn = tk.Button(btn_laterales, text="Vender Productos", command=abrir_ventas,font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     vender_btn.pack(pady=10)
 
-    agregar_btn = tk.Button(btn_laterales, text="Agregar producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    agregar_btn = tk.Button(btn_laterales, text="Agregar producto", command=abrir_agregar,font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     agregar_btn.pack(pady=10)
 
     buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     buscar_btn.pack(pady=10)
 
     def buscar_producto(qr_id, ventana_id):
-        response = requests.get(f"http://192.168.0.6:5000/productos/qr/{qr_id}")
+        response = requests.get(f"http://192.168.1.4:5000/productos/qr/{qr_id}")
         if response.status_code == 200:
             producto = response.json()
             ventana_id.destroy()
@@ -155,7 +164,7 @@ def abrir_ventana_productos(ventana_principal):
             "talla": talla,
             "tipo": tipo
         }
-        respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
+        respuesta = requests.put(f"http://192.168.1.4:5000/productos/{id}", json=data)
         if respuesta.status_code == 200:
             tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
             ventana_editar.destroy()
