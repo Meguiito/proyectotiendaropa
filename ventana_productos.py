@@ -43,7 +43,7 @@ def abrir_ventana_productos(ventana_principal):
         ventana.withdraw()
         ven_agregar.abrir_ventana_agregar(ventana)
 
-    def abrir_ventas():
+    def abrir_vender():
         ventana.withdraw()
         Ventana_ventas.abrir_ventana_ventas(ventana)
 
@@ -85,7 +85,7 @@ def abrir_ventana_productos(ventana_principal):
     btn_laterales = tk.Frame(ventana, bg='black')
     btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
-    vender_btn = tk.Button(btn_laterales, text="Vender Productos", command=abrir_ventas,font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+    vender_btn = tk.Button(btn_laterales, text="Vender Productos", command=abrir_vender,font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     vender_btn.pack(pady=10)
 
     agregar_btn = tk.Button(btn_laterales, text="Agregar producto", command=abrir_agregar,font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
