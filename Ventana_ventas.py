@@ -1,8 +1,7 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
-
+import ventana_productos
 class VentanaVentas(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -46,7 +45,7 @@ class VentanaVentas(tk.Toplevel):
         self.casilla = tk.Entry(self, font=font)
         self.casilla.place(relx=0.44, rely=0.2, anchor='center')
 
-        boton_agregar = tk.Button(self, text="Agregar producto", font=font)
+        boton_agregar = tk.Button(self, text="Agregar producto", font=font, command=self.agregar_producto)
         boton_agregar.place(relx=0.55, rely=0.2, anchor='center')
 
         # Botón "Eliminar producto"
@@ -90,9 +89,11 @@ class VentanaVentas(tk.Toplevel):
         self.destroy()
 
     def abrir_ventana_productos(self):
-        # Función para abrir ventana de productos
-        pass
+        ventana_productos.abrir_ventana_productos(self)
 
+    def agregar_producto(self):
+        # Aquí podrías implementar la lógica para agregar productos
+        pass
     def eliminar_producto(self):
         # Obtener la selección actual
         seleccion = self.tree.selection()
@@ -100,8 +101,10 @@ class VentanaVentas(tk.Toplevel):
         if not seleccion:
             messagebox.showinfo("Mensaje", "Seleccione un producto de la tabla.")
         else:
-            # Aquí podrías implementar la lógica para eliminar el producto seleccionado
-            pass
+            for item in seleccion:
+                self.tree.delete(item)
+def abrir_ventana_ventas(ventana):
+    VentanaVentas(ventana)
 
 if __name__ == "__main__":
     root = tk.Tk()
