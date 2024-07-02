@@ -38,15 +38,18 @@ def abrir_ventana_productos(ventana_principal):
     def abrir_ventas():
         ventana.withdraw()
         tkinapp.ventana_ventas(ventana)
-
+        
+    #Funcion para abrir la ventana de agregar un producto nuevo
     def abrir_agregar():
         ventana.withdraw()
         ven_agregar.abrir_ventana_agregar(ventana)
-
+        
+    #Funcion para abrir la ventana para vender un producto
     def abrir_vender():
         ventana.withdraw()
         Ventana_ventas.abrir_ventana_ventas(ventana)
-
+        
+    # Boton para dirigirse a la tabla de ventas
     ventas_btn = tk.Button(ventana, text="Tabla ventas", command=abrir_ventas, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     ventas_btn.grid(row=0, column=3, padx=10, pady=10, sticky='ne')
 
@@ -67,11 +70,12 @@ def abrir_ventana_productos(ventana_principal):
         tabla.column(col, width=100)
 
     tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
-
+    
+    # Funcion para actualizar los productos que estan en la bd
     def actualizar_productos():
         for fila in tabla.get_children():
             tabla.delete(fila)
-        respuesta = requests.get("http://192.168.1.4:5000/productos")
+        respuesta = requests.get("http://192.168.0.6:5000/productos")
         respuesta.raise_for_status()
         produc = respuesta.json()
         productos = []
@@ -82,6 +86,7 @@ def abrir_ventana_productos(ventana_principal):
 
     actualizar_productos()
 
+    # Config botones laterales (ventas, agregar, buscar y editar)
     btn_laterales = tk.Frame(ventana, bg='black')
     btn_laterales.grid(row=1, column=4, rowspan=4, padx=10, pady=10, sticky='n')
 
@@ -94,99 +99,7 @@ def abrir_ventana_productos(ventana_principal):
     buscar_btn = tk.Button(btn_laterales, text="Buscar Producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8)
     buscar_btn.pack(pady=10)
     
-    def ventana_agregar_producto():
-        # Ventana de agregar productos
-        ventana = tk.Toplevel()
-        ventana.title("Agregar producto")
-        ventana.attributes('-fullscreen', True)
-
-        # Función agregar producto
-        def agregar_producto():
-            url = "http://192.168.1.4:5000/agregar-producto"
-            datos = {
-                "tipo": entry1.get(),
-                "talla": entry2.get(),
-                "producto": entry3.get(),
-                "precio": entry4.get(),
-                "qr_id": entry5.get()
-            }
-            respuesta = requests.post(url, json=datos)
-            if respuesta.status_code in [200, 201]:
-                messagebox.showinfo("Éxito", "Producto agregado exitosamente.")
-                ventana.destroy()
-                actualizar_productos()
-            else:
-                messagebox.showerror("Error", f"Error al agregar el producto. Código de estado: {respuesta.status_code}")
-
-        # Imagen de fondo
-        ima_f = "fondo.png"
-        fondo = Image.open(ima_f)
-        fondo_i = ImageTk.PhotoImage(fondo)
-        fondo_label = tk.Label(ventana, image=fondo_i)
-        fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
-        fondo_label.image = fondo_i
-
-        # Imagen de logo
-        logo_path = "logo.png"
-        logo_image = Image.open(logo_path)
-        logo_image = logo_image.resize((120, 120))
-        logo = ImageTk.PhotoImage(logo_image)
-        logo_label = tk.Label(ventana, image=logo, bg='white')
-        logo_label.grid(row=0, column=0, padx=30, pady=30, rowspan=2, sticky='nw')
-        logo_label.image = logo
-
-        # Frame central para centrar los widgets
-        frame_central = tk.Frame(ventana, bg='#5D5959')
-        frame_central.place(relx=0.5, rely=0.5, anchor='center')
-
-        # Título
-        titulo_label = tk.Label(frame_central, text="Ingresar producto", font=("Helvetica", 24), bg='white')
-        titulo_label.grid(row=0, column=0, columnspan=2, pady=20)
-
-        # Casillas de texto
-        entrylb1 = tk.Label(frame_central, text="Tipo", font=("Helvetica", 16))
-        entrylb1.grid(row=5, column=0, pady=10, padx=10)
-        entry1 = tk.Entry(frame_central, font=("Helvetica", 16))
-        entry1.grid(row=6, column=0, pady=10, padx=10)
-
-        entrylb2 = tk.Label(frame_central, text="Talla", font=("Helvetica", 16))
-        entrylb2.grid(row=3, column=0, pady=10, padx=10)
-        entry2 = tk.Entry(frame_central, font=("Helvetica", 16))
-        entry2.grid(row=4, column=0, pady=10, padx=10)
-
-        entrylb3 = tk.Label(frame_central, text="Producto", font=("Helvetica", 16))
-        entrylb3.grid(row=1, column=0, pady=10, padx=10)
-        entry3 = tk.Entry(frame_central, font=("Helvetica", 16))
-        entry3.grid(row=2, column=0, pady=10, padx=10)
-
-        entrylb4 = tk.Label(frame_central, text="Precio", font=("Helvetica", 16))
-        entrylb4.grid(row=7, column=0, pady=10, padx=10)
-        entry4 = tk.Entry(frame_central, font=("Helvetica", 16))
-        entry4.grid(row=8, column=0, pady=10, padx=10)
-
-        entrylb5 = tk.Label(frame_central, text="Id_Qr", font=("Helvetica", 16))
-        entrylb5.grid(row=9, column=0, pady=10, padx=10)
-        entry5 = tk.Entry(frame_central, font=("Helvetica", 16))
-        entry5.grid(row=10, column=0, pady=10, padx=10)
-
-        # Botón Enviar
-        enviar_button = tk.Button(frame_central, text="Enviar", font=("Helvetica", 16), command=agregar_producto)
-        enviar_button.grid(row=11, column=0, pady=10, padx=10)
-
-        # Botón Cerrar en la esquina superior derecha
-        cerrar_button = tk.Button(ventana, text="Cerrar", font=("Helvetica", 12), command=ventana.destroy)
-        cerrar_button.place(relx=1.0, rely=0.0, anchor='ne', x=-10, y=10)
-
-        # Función para cerrar la ventana con la tecla Escape
-        def cerrar_ventana(event):
-            ventana.destroy()
-
-        # Vincular la tecla Escape para cerrar la ventana
-        ventana.bind('<Escape>', cerrar_ventana)
-
-        ventana.mainloop()
-
-
+    # Función para la ventana de Consultar info de producto 
     def ver_producto(producto, ventana_principal):
         ventana_ver = tk.Toplevel()
         ventana_ver.title("Información del Producto")
@@ -251,7 +164,8 @@ def abrir_ventana_productos(ventana_principal):
         else:
             tk.messagebox.showwarning("Selecciona un producto primero")
     buscar_btn.config(command=obtener_producto_seleccionado)
-           
+    
+    # Función para la ventana de editar un producto de la bd   
     def ventana_editar(producto):
         ventana_editar = tk.Toplevel()
         ventana_editar.title("Editar Producto")
@@ -300,12 +214,16 @@ def abrir_ventana_productos(ventana_principal):
         tk.Button(frame_central, text="Actualizar", font=("Helvetica", 16), command=lambda: actualizar_producto(producto[0], producto_entry.get(), 
         precio_entry.get(), talla_entry.get(), tipo_entry.get(), ventana_editar)).grid(row=5, column=0, columnspan=2, pady=20)
         
+        btn_productos = tk.Button(ventana_editar, text="Productos", font=("Helvetica", 12), command=lambda: regresar(ventana_editar, ventana))
+        btn_productos.place(relx=1.0, rely=0.0, anchor='ne', x=-10, y=10)
+        
         def cerrar_ventana(event):
             ventana_editar.destroy()
         
         ventana_editar.bind('<Escape>', cerrar_ventana)
         ventana_editar.mainloop()
 
+    # Funcion para si se quiere editar los campos de un producto
     def actualizar_producto(id, producto, precio, talla, tipo, ventana_editar):
         data = {
             "Producto": producto,
@@ -313,7 +231,7 @@ def abrir_ventana_productos(ventana_principal):
             "talla": talla,
             "tipo": tipo
         }
-        respuesta = requests.put(f"http://192.168.1.4:5000/productos/{id}", json=data)
+        respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
         if respuesta.status_code == 200:
             tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
             ventana_editar.destroy()
@@ -330,15 +248,14 @@ def abrir_ventana_productos(ventana_principal):
         else:
             messagebox.showwarning("Advertencia", "Seleccione un producto para editar.")
     
+    # Boton lateral para editar un producto
     editar_btn = tk.Button(btn_laterales, text="Editar producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8, 
                        command=editar_producto_seleccionado)
     editar_btn.pack(pady=10)
     
-    # Función para cerrar la ventana
     def cerrar_ventana(event):
         ventana.destroy()
 
-    # Vincular la tecla Escape para cerrar la ventana
     ventana.bind('<Escape>', cerrar_ventana)
     ventana.grid_rowconfigure(1, weight=1)
     ventana.grid_columnconfigure(2, weight=1)
