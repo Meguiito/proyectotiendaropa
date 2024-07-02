@@ -100,17 +100,9 @@ def abrir_ventana_productos(ventana_principal):
         ventana.title("Agregar producto")
         ventana.attributes('-fullscreen', True)
 
-<<<<<<< HEAD
-    def buscar_producto(qr_id, ventana_id):
-        response = requests.get(f"http://192.168.1.4:5000/productos/qr/{qr_id}")
-        if response.status_code == 200:
-            producto = response.json()
-            ventana_id.destroy()
-            ventana_editar(producto)
-=======
         # Función agregar producto
         def agregar_producto():
-            url = "http://192.168.0.6:5000/agregar-producto"
+            url = "http://192.168.1.4:5000/agregar-producto"
             datos = {
                 "tipo": entry1.get(),
                 "talla": entry2.get(),
@@ -193,9 +185,7 @@ def abrir_ventana_productos(ventana_principal):
         ventana.bind('<Escape>', cerrar_ventana)
 
         ventana.mainloop()
-    
-    agregar_btn = tk.Button(btn_laterales, text="Agregar producto", font=("Helvetica", 12), bg='light grey', fg='black', relief='ridge', borderwidth=8, command=ventana_agregar_producto)
-    agregar_btn.pack(pady=10)
+
 
     def ver_producto(producto, ventana_principal):
         ventana_ver = tk.Toplevel()
@@ -258,7 +248,6 @@ def abrir_ventana_productos(ventana_principal):
                 "ID QR": valores[0]
             }
             ver_producto(producto, ventana)
->>>>>>> 3beb0190b2a26e0f6cf067b353fddd4439b9edb0
         else:
             tk.messagebox.showwarning("Selecciona un producto primero")
     buscar_btn.config(command=obtener_producto_seleccionado)
