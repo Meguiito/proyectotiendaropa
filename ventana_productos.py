@@ -75,7 +75,7 @@ def abrir_ventana_productos(ventana_principal):
     def actualizar_productos():
         for fila in tabla.get_children():
             tabla.delete(fila)
-        respuesta = requests.get("http://192.168.1.4:5000/productos")
+        respuesta = requests.get("http://192.168.0.6:5000/productos")
         respuesta.raise_for_status()
         produc = respuesta.json()
         productos = []
@@ -222,7 +222,7 @@ def abrir_ventana_productos(ventana_principal):
         
         ventana_editar.bind('<Escape>', cerrar_ventana)
         ventana_editar.mainloop()
-
+    
     # Funcion para si se quiere editar los campos de un producto
     def actualizar_producto(id, producto, precio, talla, tipo, ventana_editar):
         data = {
@@ -231,7 +231,7 @@ def abrir_ventana_productos(ventana_principal):
             "talla": talla,
             "tipo": tipo
         }
-        respuesta = requests.put(f"http://192.168.1.4:5000/productos/{id}", json=data)
+        respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
         if respuesta.status_code == 200:
             tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
             ventana_editar.destroy()
