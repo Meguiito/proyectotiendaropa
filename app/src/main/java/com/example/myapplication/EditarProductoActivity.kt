@@ -53,7 +53,7 @@ interface EditProductService {
     @GET("productos/qr/{qr_id}")
     fun getProductByQrId(@Path("qr_id") qrId: String): Call<ProductoEdit>
 
-    @PUT("productos/{id}")
+    @PUT("productoss/{id}")
     fun updateProduct(@Path("id") id: String, @Body product: ProductoEdit): Call<Map<String, String>>
 }
 
