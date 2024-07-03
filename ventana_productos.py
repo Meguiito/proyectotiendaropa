@@ -75,7 +75,7 @@ def abrir_ventana_productos(ventana_principal):
     def actualizar_productos():
         for fila in tabla.get_children():
             tabla.delete(fila)
-        respuesta = requests.get("http://192.168.1.12:5000/productos")
+        respuesta = requests.get("http://192.168.0.6:5000/productos")
         respuesta.raise_for_status()
         produc = respuesta.json()
         productos = []
@@ -165,44 +165,6 @@ def abrir_ventana_productos(ventana_principal):
             tk.messagebox.showwarning("Selecciona un producto primero")
     buscar_btn.config(command=obtener_producto_seleccionado)
     
-    
-    
-    def buscar_producto():
-        buscar_window = tk.Toplevel(ventana)
-        buscar_window.title("Buscar Producto")
-        buscar_window.geometry("400x200")
-
-        tk.Label(buscar_window, text="Buscar por:").pack(pady=5)
-        opciones = ["ID QR", "Tipo", "Talla", "Precio", "Modelo"]
-        opcion_var = tk.StringVar(value=opciones[0])
-        opcion_menu = ttk.Combobox(buscar_window, textvariable=opcion_var, values=opciones)
-        opcion_menu.pack(pady=5)
-
-        tk.Label(buscar_window, text="Valor de búsqueda:").pack(pady=5)
-        valor_busqueda = tk.Entry(buscar_window)
-        valor_busqueda.pack(pady=5)
-
-        def realizar_busqueda():
-            opcion = opcion_var.get()
-            valor = valor_busqueda.get().strip()
-            for fila in tabla.get_children():
-                tabla.delete(fila)
-            respuesta = requests.get(f"http://192.168.1.12:5000/productos?{opcion.lower()}={valor}")
-            respuesta.raise_for_status()
-            produc = respuesta.json()
-            productos = []
-            for pro in produc:
-                productos.append((pro["qr_id"], pro["name"], pro["talla"], pro["price"], pro["tipo"]))
-            for producto in productos:
-                tabla.insert("", tk.END, values=producto)
-            buscar_window.destroy()
-
-        buscar_btn = tk.Button(buscar_window, text="Buscar", command=realizar_busqueda)
-        buscar_btn.pack(pady=5)
-
-    buscar_btn.configure(command=buscar_producto)
-
-    
     # Función para la ventana de editar un producto de la bd   
     def ventana_editar(producto):
         ventana_editar = tk.Toplevel()
@@ -269,7 +231,7 @@ def abrir_ventana_productos(ventana_principal):
             "talla": talla,
             "tipo": tipo
         }
-        respuesta = requests.put(f"http://192.168.1.12:5000/productos/{id}", json=data)
+        respuesta = requests.put(f"http://192.168.0.6:5000/productos/{id}", json=data)
         if respuesta.status_code == 200:
             tk.messagebox.showinfo("Éxito", "Producto actualizado correctamente")
             ventana_editar.destroy()
