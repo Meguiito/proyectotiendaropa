@@ -35,7 +35,7 @@ class VentanaVenta(tk.Toplevel):
         titulo_ventas.grid(row=0, column=1, columnspan=3, padx=20, pady=20, sticky='n')
 
         # Tabla de ventas
-        columns = ("ID Venta", "ID QR Producto", "Producto", "Precio")
+        columns = ("ID Venta", "ID Productos", "Total")
         self.tabla = ttk.Treeview(self, columns=columns, show="headings")
 
         # Estilo para la tabla
@@ -71,36 +71,46 @@ class VentanaVenta(tk.Toplevel):
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://192.168.0.16:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventaspc")
             response.raise_for_status()
             ventas = response.json()['ventas']
-
+  
             for item in self.tabla.get_children():
                 self.tabla.delete(item)
 
             for venta in ventas:
-                self.tabla.insert("", "end", values=(venta["id_venta"], venta["qr_id"], venta["producto"], venta["precio"]))
+                id_venta = venta["id_venta"]
+                nombres_productos = " , ".join(map(str,nombreproductos(venta["id_productos"])))
+
+                total = venta["total"]
+                self.tabla.insert("", "end", values=(id_venta,nombres_productos, total))
 
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://192.168.0.16:5000/ventas")
+            response = requests.get("http://192.168.1.4:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
-            productos = [venta['producto'] for venta in ventas]
-            precios = [venta['precio'] for venta in ventas]
+            productos = [prod['producto'] for venta in ventas for prod in venta['productos']]
+            precios = [prod['precio'] for venta in ventas for prod in venta['productos']]
             contador_productos = Counter(productos)
             producto_mas_vendido, cantidad = contador_productos.most_common(1)[0]
             precio_total = sum(precios[i] for i, producto in enumerate(productos) if producto == producto_mas_vendido)
             messagebox.showinfo("Producto más vendido", f"Producto: {producto_mas_vendido}\nCantidad: {cantidad}\nPrecio Total: {precio_total}")
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
+       
 
 def ventana_ventas(parent):
     VentanaVenta(parent)
-
+def nombreproductos(id_productos):
+    nombres = []
+    for k in id_productos:
+        respuesta = requests.get(f"http://192.168.1.4:5000/productos/qr/{k}")
+        nombres.append(respuesta.json()['Producto'])
+    return nombres
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()

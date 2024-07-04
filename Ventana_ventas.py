@@ -3,9 +3,11 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import ventana_productos
 import requests
+
 class VentanaVentas(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
+        self.idvendas=[]
         self.title("Ventas")
         self.attributes('-fullscreen', True)
         self.parent = parent
@@ -71,16 +73,16 @@ class VentanaVentas(tk.Toplevel):
         for col in columns:
             self.tree.heading(col, text=self.tree.heading(col)['text'], anchor='center')
 
-        # Añadir datos de ejemplo a la tabla
-        for i in range(1, 15):
-            self.tree.insert("", "end", values=(f"Dato {i}", f"Dato {i}", f"Dato {i}", f"Dato {i}"))
-
         # Posicionar la tabla en el centro de la ventana
         self.tree.place(relx=0.5, rely=0.5, anchor='center', relheight=0.5, relwidth=0.5)
 
         # Etiqueta debajo de la tabla con el total
         etiqueta_abajo = tk.Label(self, text=f'Total : {self.total}', font=font)
         etiqueta_abajo.place(relx=0.5, rely=0.7, anchor='center')
+
+        # Botón "Terminar venta" debajo de la tabla
+        boton_terminar_venta = tk.Button(self, text="Terminar venta", font=font, command=self.terminar_venta)
+        boton_terminar_venta.place(relx=0.5, rely=0.8, anchor='center')
 
         # Vincular la tecla Escape para cerrar la ventana
         self.bind('<Escape>', self.cerrar_ventana)
@@ -93,7 +95,18 @@ class VentanaVentas(tk.Toplevel):
         ventana_productos.abrir_ventana_productos(self)
 
     def agregar_producto(self):
-        pass
+        idproducto = self.casilla.get()
+        respuesta = requests.get(f"http://192.168.1.4:5000/productos/qr/{idproducto}")
+        self.casilla.delete(0,tk.END)
+        if respuesta.status_code in [200,201,202] :
+            datos = respuesta.json()
+            self.tree.insert("", "end", values=(datos["Producto"], datos["tipo"], datos["talla"], datos["Precio"]))
+            self.total += float(datos["Precio"])  # Actualizar total
+            self.idvendas.append(idproducto)
+            self.actualizar_total()
+        else:
+            messagebox.showinfo("Alerta", "ID_QR mal escrito")
+
     def eliminar_producto(self):
         # Obtener la selección actual
         seleccion = self.tree.selection()
@@ -102,7 +115,31 @@ class VentanaVentas(tk.Toplevel):
             messagebox.showinfo("Mensaje", "Seleccione un producto de la tabla.")
         else:
             for item in seleccion:
+                precio = self.tree.item(item, 'values')[3]
+                self.total -= float(precio)  # Actualizar total
                 self.tree.delete(item)
+            self.actualizar_total()
+
+    def terminar_venta(self):
+        # Lógica para terminar la venta
+        datos = {
+            'id_productos':self.idvendas,
+            'total': self.total
+        }
+        respuesta =  requests.post(f"http://192.168.1.4:5000/ventaspc",json=datos)
+        print(respuesta.status_code)
+        messagebox.showinfo("Venta", f"La venta ha sido terminada. Total: {self.total}")
+        # Aquí puedes agregar lógica para limpiar la tabla, restablecer el total, etc.
+        self.tree.delete(*self.tree.get_children())
+        self.total = 0
+        self.idvendas=[]
+        self.actualizar_total()
+
+    def actualizar_total(self):
+        # Actualizar la etiqueta del total
+        etiqueta_abajo = tk.Label(self, text=f'Total : {self.total}', font=("Helvetica", 15))
+        etiqueta_abajo.place(relx=0.5, rely=0.7, anchor='center')
+
 def abrir_ventana_ventas(ventana):
     VentanaVentas(ventana)
 

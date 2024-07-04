@@ -244,5 +244,37 @@ def get_venta(id):
     else:
         return jsonify({'error': 'Venta no encontrada'}), 404
 
+@app.route('/ventaspc', methods=['POST'])
+@cross_origin()
+def add_ventapc():
+    data = request.json
+    print(data)
+    venta_data = {
+        "id_venta": generar_id_venta(),
+        'id_productos':data['id_productos'],
+        'total': data['total']
+    }
+    venta_id = ventas_collection.insert_one(venta_data).inserted_id
+    return jsonify({'_id': str(venta_id)}), 201
+
+@app.route('/ventaspc', methods=['GET'])
+@cross_origin()
+def get_ventas_pc():
+    ventas_formateadas = []
+    ventas = ventas_collection.find()
+
+    for venta in ventas:
+        id_venta = venta.get("id_venta")
+        id_productos = venta.get("id_productos", [])
+        total = venta.get("total", 0)
+        ventas_formateadas.append({
+            "id_venta": id_venta,
+            "id_productos": id_productos,
+            "total": total
+        })
+    
+    return jsonify({"ventas": ventas_formateadas}), 200
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
