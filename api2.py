@@ -53,6 +53,15 @@ def update_producto(id):
         return jsonify({"mensaje": "Producto actualizado correctamente"}), 200
     else:
         return jsonify({"error": "Producto no encontrado"}), 404
+    
+@app.route('/productoss/<id>', methods=['PUT'])
+@cross_origin()
+def update_productoo(id):
+    data = request.json
+    if '_id' in data:
+        del data['_id']
+    productos_collection.update_one({'_id': ObjectId(id)}, {"$set": data})
+    return jsonify({'message': 'Producto actualizado'}), 200
 
 @app.route('/agregar-producto', methods=['POST'])
 @cross_origin()
@@ -191,28 +200,28 @@ def escanear_qr():
 @app.route('/ventas', methods=['GET'])
 @cross_origin()
 def get_ventas():
-    page = int(request.args.get('page', 1))
-    limit = int(request.args.get('limit', 15))
-    skips = limit * (page - 1)
-    ventas = []
-    cursor = ventas_collection.find().skip(skips).limit(limit)
-    for venta in cursor:
-        ventas.append({
-            '_id': str(venta['_id']),
-            'id_venta': venta['id_venta'],
-            'qr_id': venta['qr_id'],
-            'producto': venta['producto'],
-            'precio': venta['precio'],
-            'talla': venta['talla'],
-            'tipo': venta['tipo']
-        })
-    total_ventas = ventas_collection.count_documents({})
-    total_pages = (total_ventas + limit - 1) // limit
-    return jsonify({
-        'ventas': ventas,
-        'total_pages': total_pages,
-        'current_page': page
-    })
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Número de elementos por página
+    ventas = ventas_collection.find().skip((page - 1) * per_page).limit(per_page)
+    total_items = ventas_collection.count_documents({})
+    total_pages = (total_items + per_page - 1) // per_page  # Cálculo del total de páginas
+
+    ventas_data = [{
+        '_id': str(venta['_id']),
+        'id_venta': venta['id_venta'],
+        'qr_id': venta['qr_id'],
+        'producto': venta['producto'],
+        'precio': venta['precio'],
+        'talla': venta['talla'],
+        'tipo': venta['tipo']
+    } for venta in ventas]
+
+    headers = {
+        'Total-Items': total_items,
+        'Total-Pages': total_pages
+    }
+
+    return jsonify(ventas_data), 200, headers
 
 @app.route('/ventas/<id>', methods=['GET'])
 @cross_origin()
