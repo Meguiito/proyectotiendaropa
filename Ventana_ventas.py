@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import ventana_productos
+import requests
 class VentanaVentas(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
@@ -71,7 +72,7 @@ class VentanaVentas(tk.Toplevel):
             self.tree.heading(col, text=self.tree.heading(col)['text'], anchor='center')
 
         # Añadir datos de ejemplo a la tabla
-        for i in range(1, 6):
+        for i in range(1, 15):
             self.tree.insert("", "end", values=(f"Dato {i}", f"Dato {i}", f"Dato {i}", f"Dato {i}"))
 
         # Posicionar la tabla en el centro de la ventana
@@ -92,7 +93,6 @@ class VentanaVentas(tk.Toplevel):
         ventana_productos.abrir_ventana_productos(self)
 
     def agregar_producto(self):
-        # Aquí podrías implementar la lógica para agregar productos
         pass
     def eliminar_producto(self):
         # Obtener la selección actual

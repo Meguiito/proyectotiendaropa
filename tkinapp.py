@@ -5,33 +5,38 @@ from collections import Counter
 from PIL import Image, ImageTk
 import ventana_productos
 
-class VentanaVentas(tk.Toplevel):
+class VentanaVenta(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Ventana de Ventas")
-
         self.attributes('-fullscreen', True)
+        self.configure(bg='black')
         self.parent = parent  # Guardar referencia a la ventana principal
-        # Contenedor principal
-        contenedor_principal = tk.Frame(self)
-        contenedor_principal.pack(fill=tk.BOTH, expand=True)
 
-        frame_superior = tk.Frame(contenedor_principal)
-        frame_superior.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        # Imagen de fondo
+        imagen_fondo = "fondo.png"
+        fondo = Image.open(imagen_fondo)
+        fondo_ima = ImageTk.PhotoImage(fondo)
+        fondo_label = tk.Label(self, image=fondo_ima)
+        fondo_label.place(x=0, y=0, relwidth=1, relheight=1)
+        fondo_label.image = fondo_ima
 
         # Cargar la imagen del logo
-        self.logo = Image.open("logo.png")
-        self.logo = self.logo.resize((60, 60), Image.LANCZOS)
-        self.logo_tk = ImageTk.PhotoImage(self.logo)
-        self.logo_label = tk.Label(contenedor_principal, image=self.logo_tk)
-        self.logo_label.image = self.logo_tk  # Mantener referencia de la imagen
-        self.logo_label.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
+        logo_path = "logo.png"
+        logo_image = Image.open(logo_path)
+        logo_image = logo_image.resize((100, 100))
+        logo = ImageTk.PhotoImage(logo_image)
+        logo_label = tk.Label(self, image=logo, bg='white')
+        logo_label.grid(row=0, column=0, padx=20, pady=10, rowspan=2, sticky='nw')
+        logo_label.image = logo
 
-        self.text_label = tk.Label(frame_superior, text="Ventas", font=("Helvetica", 20, "bold"))
-        self.text_label.grid(row=0, column=1, sticky="nw", padx=350, pady=10)
+        # Título de Ventas
+        titulo_ventas = tk.Label(self, text="Ventas", font=("Helvetica", 28, "bold"), bg='black', fg='#FFD700')
+        titulo_ventas.grid(row=0, column=1, columnspan=3, padx=20, pady=20, sticky='n')
 
-        # Tabla en la fila inferior
-        self.tabla = ttk.Treeview(contenedor_principal, columns=("id_venta", "id_qr_producto", "producto", "precio"), show='headings')
+        # Tabla de ventas
+        columns = ("ID Venta", "ID QR Producto", "Producto", "Precio")
+        self.tabla = ttk.Treeview(self, columns=columns, show="headings")
 
         # Estilo para la tabla
         style = ttk.Style()
@@ -39,37 +44,34 @@ class VentanaVentas(tk.Toplevel):
         style.configure("Treeview", font=("Georgia", 12), background="white", foreground="black", fieldbackground="white")
         style.configure("Treeview.Heading", font=("Georgia", 14, "bold"), foreground="black")
 
-        self.tabla.heading("id_venta", text="ID Venta")
-        self.tabla.heading("id_qr_producto", text="ID QR Producto")
-        self.tabla.heading("producto", text="Producto")
-        self.tabla.heading("precio", text="Precio")
+        for col in columns:
+            self.tabla.heading(col, text=col)
+            self.tabla.column(col, width=100)
 
-        self.tabla.column("id_venta", anchor=tk.CENTER, width=100)
-        self.tabla.column("id_qr_producto", anchor=tk.CENTER, width=200)
-        self.tabla.column("producto", anchor=tk.CENTER, width=100)
-        self.tabla.column("precio", anchor=tk.CENTER, width=100)
+        self.tabla.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky='nsew')
 
-        self.tabla.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        # Botón para cargar ventas
+        boton_cargar_ventas = tk.Button(self, text="Cargar Ventas", command=self.cargar_ventas, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+        boton_cargar_ventas.grid(row=2, column=1, sticky="w", padx=10, pady=10)
 
-        # Botón cargar ventas
-        self.boton_cargar_ventas = tk.Button(contenedor_principal, text="Cargar Ventas", command=self.cargar_ventas, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
-        self.boton_cargar_ventas.grid(row=2, column=0, sticky="w", padx=10, pady=10)
+        # Botón para ver productos más vendidos
+        boton_otro = tk.Button(self, text="Productos más vendidos", command=self.producto_mas_vendido, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+        boton_otro.grid(row=2, column=2, sticky="e", padx=10, pady=10)
 
-        # Botón Productos más vendidos
-        self.boton_otro = tk.Button(contenedor_principal, text="Productos más vendidos", command=self.producto_mas_vendido, font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
-        self.boton_otro.grid(row=2, column=1, sticky="e", padx=10, pady=10)
+        # Botón para ir a la tabla de productos
+        boton_tabla_productos = tk.Button(self, text="Tabla Productos", command=lambda: ventana_productos.abrir_ventana_productos(self), font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
+        boton_tabla_productos.grid(row=2, column=3, sticky="e", padx=10, pady=10)
 
-        # Botón Tabla productos
-        self.boton_tabla_productos = tk.Button(contenedor_principal, text="Tabla Productos", command=lambda: ventana_productos.abrir_ventana_productos(self), font=("Helvetica", 14), bg='light grey', fg='black', relief='ridge', borderwidth=8)
-        self.boton_tabla_productos.grid(row=0, column=0, sticky="e", padx=10, pady=10, columnspan=2)
+        # Configuración para que las filas y columnas se expandan
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=1)
 
-        # Configurar el contenedor principal para que las filas y columnas se expandan
-        contenedor_principal.grid_rowconfigure(1, weight=1)
-        contenedor_principal.grid_columnconfigure(0, weight=1)
+        # Manejar evento para cerrar la ventana
+        self.bind('<Escape>', lambda event: self.destroy())
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://192.168.1.4:5000/ventas")
+            response = requests.get("http://192.168.0.16:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
 
@@ -84,11 +86,10 @@ class VentanaVentas(tk.Toplevel):
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://192.168.1.4:5000/ventas")
+            response = requests.get("http://192.168.0.16:5000/ventas")
             response.raise_for_status()
             ventas = response.json()['ventas']
-
-            productos = [venta['Producto'] for venta in ventas]
+            productos = [venta['producto'] for venta in ventas]
             precios = [venta['precio'] for venta in ventas]
             contador_productos = Counter(productos)
             producto_mas_vendido, cantidad = contador_productos.most_common(1)[0]
@@ -98,7 +99,7 @@ class VentanaVentas(tk.Toplevel):
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
 
 def ventana_ventas(parent):
-    VentanaVentas(parent)
+    VentanaVenta(parent)
 
 if __name__ == "__main__":
     root = tk.Tk()

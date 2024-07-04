@@ -37,8 +37,7 @@ def abrir_ventana_productos(ventana_principal):
     #Funcion para abrir la ventana de ventas
     def abrir_ventas():
         ventana.withdraw()
-        tkinapp.ventana_ventas(ventana)
-        
+        tkinapp.VentanaVenta(ventana)
     #Funcion para abrir la ventana de agregar un producto nuevo
     def abrir_agregar():
         ventana.withdraw()
