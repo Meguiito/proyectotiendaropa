@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,11 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -44,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.Path
 
 data class VentaData(
     val qr_id: String,
@@ -68,7 +64,12 @@ interface VentasService {
     fun addVenta(@Body ventaData: VentaData): Call<Map<String, String>>
 
     @GET("ventas")
-    fun getVentas(@Query("page") page: Int): Call<List<Venta>>
+    fun getVentas(@retrofit2.http.Query("page") page: Int): Call<List<Venta>>
+}
+
+interface ProductService {
+    @GET("productos/qr/{qr_id}")
+    fun getProductoByQrId(@Path("qr_id") qrId: String): Call<Producto>
 }
 
 class VentasActivity : ComponentActivity() {
@@ -110,7 +111,7 @@ class VentasActivity : ComponentActivity() {
                             text = "¿Qué deseas hacer?",
                             color = Color.White,
                             fontSize = 24.sp,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
@@ -124,9 +125,10 @@ class VentasActivity : ComponentActivity() {
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
-                                fetchVentas(currentPage) { fetchedVentas, total, pages ->
+                                fetchVentas(1) { fetchedVentas, fetchedTotalPages ->
                                     ventas = fetchedVentas
-                                    totalPages = pages
+                                    totalPages = fetchedTotalPages
+                                    currentPage = 1
                                     screenState = "showVentas"
                                 }
                             },
@@ -150,46 +152,40 @@ class VentasActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.Top,
+                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         VentasTable(ventas)
                         Spacer(modifier = Modifier.height(16.dp))
-
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Button(
-                                onClick = {
-                                    if (currentPage > 1) {
-                                        currentPage--
-                                        fetchVentas(currentPage) { fetchedVentas, _, _ ->
+                            if (currentPage > 1) {
+                                Button(
+                                    onClick = {
+                                        fetchVentas(currentPage - 1) { fetchedVentas, _ ->
                                             ventas = fetchedVentas
+                                            currentPage -= 1
                                         }
                                     }
-                                },
-                                enabled = currentPage > 1
-                            ) {
-                                Text("Anterior")
+                                ) {
+                                    Text("Anterior")
+                                }
                             }
-
-                            Button(
-                                onClick = {
-                                    if (currentPage < totalPages) {
-                                        currentPage++
-                                        fetchVentas(currentPage) { fetchedVentas, _, _ ->
+                            if (currentPage < totalPages) {
+                                Button(
+                                    onClick = {
+                                        fetchVentas(currentPage + 1) { fetchedVentas, _ ->
                                             ventas = fetchedVentas
+                                            currentPage += 1
                                         }
                                     }
-                                },
-                                enabled = currentPage < totalPages
-                            ) {
-                                Text("Siguiente")
+                                ) {
+                                    Text("Siguiente")
+                                }
                             }
                         }
-
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
@@ -202,60 +198,51 @@ class VentasActivity : ComponentActivity() {
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.Start
-            ) {
-                IconButton(
-                    onClick = {
-                        val intent = Intent(this@VentasActivity, InicioActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver a Inicio",
-                        tint = Color.White
-                    )
-                }
-            }
         }
     }
 
     private fun addVenta(qrId: String, onComplete: () -> Unit) {
-        val ventasService = retrofit.create(VentasService::class.java)
-        val ventaData = VentaData(qrId, "Producto Ejemplo", 10.0, "XL", "Tipo Ejemplo")
-        ventasService.addVenta(ventaData).enqueue(object : Callback<Map<String, String>> {
-            override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
+        val productService = retrofit.create(ProductService::class.java)
+        productService.getProductoByQrId(qrId).enqueue(object : Callback<Producto> {
+            override fun onResponse(call: Call<Producto>, response: Response<Producto>) {
                 if (response.isSuccessful && response.body() != null) {
-                    Toast.makeText(this@VentasActivity, "Venta agregada correctamente", Toast.LENGTH_SHORT).show()
-                    onComplete()
+                    val producto = response.body()!!
+                    val ventaData = VentaData(qrId, producto.Producto, producto.Precio, producto.talla, producto.tipo)
+
+                    val ventasService = retrofit.create(VentasService::class.java)
+                    ventasService.addVenta(ventaData).enqueue(object : Callback<Map<String, String>> {
+                        override fun onResponse(call: Call<Map<String, String>>, response: Response<Map<String, String>>) {
+                            if (response.isSuccessful && response.body() != null) {
+                                Toast.makeText(this@VentasActivity, "Venta agregada correctamente", Toast.LENGTH_SHORT).show()
+                                onComplete()
+                            } else {
+                                Toast.makeText(this@VentasActivity, "Error al agregar la venta", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
+                            Toast.makeText(this@VentasActivity, "Error de red al agregar la venta", Toast.LENGTH_SHORT).show()
+                        }
+                    })
                 } else {
-                    Toast.makeText(this@VentasActivity, "Error al agregar la venta", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@VentasActivity, "Producto no encontrado", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onFailure(call: Call<Map<String, String>>, t: Throwable) {
-                Toast.makeText(this@VentasActivity, "Error de red al agregar la venta", Toast.LENGTH_SHORT).show()
+            override fun onFailure(call: Call<Producto>, t: Throwable) {
+                Toast.makeText(this@VentasActivity, "Error de red al obtener el producto", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
-    private fun fetchVentas(page: Int, callback: (List<Venta>, Int, Int) -> Unit) {
+    private fun fetchVentas(page: Int, callback: (List<Venta>, Int) -> Unit) {
         val ventasService = retrofit.create(VentasService::class.java)
         ventasService.getVentas(page).enqueue(object : Callback<List<Venta>> {
             override fun onResponse(call: Call<List<Venta>>, response: Response<List<Venta>>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val totalPages = response.headers()["Total-Pages"]?.toIntOrNull() ?: 1
-                    val totalItems = response.headers()["Total-Items"]?.toIntOrNull() ?: 0
-                    callback(response.body()!!, totalItems, totalPages)
+                    val fetchedVentas = response.body()!!
+                    val totalPages = response.headers()["Total-Pages"]?.toInt() ?: 1
+                    callback(fetchedVentas, totalPages)
                 } else {
                     Toast.makeText(this@VentasActivity, "Error al obtener las ventas", Toast.LENGTH_SHORT).show()
                 }
@@ -269,25 +256,22 @@ class VentasActivity : ComponentActivity() {
 
     @Composable
     fun VentasTable(ventas: List<Venta>) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
             items(ventas) { venta ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(venta.qr_id, modifier = Modifier.weight(1f), Color.White)
-                    Text(venta.producto, modifier = Modifier.weight(1f), Color.White)
-                    Text(venta.precio.toString(), modifier = Modifier.weight(1f), Color.White)
-                    Text(venta.talla, modifier = Modifier.weight(1f), Color.White)
-                    Text(venta.tipo, modifier = Modifier.weight(1f), Color.White)
+                    Text(venta.id_venta, color = Color.White)
+                    Text(venta.qr_id, color = Color.White)
+                    Text(venta.producto, color = Color.White)
+                    Text(venta.precio.toString(), color = Color.White)
+                    Text(venta.talla, color = Color.White)
+                    Text(venta.tipo, color = Color.White)
                 }
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
     }
@@ -296,14 +280,14 @@ class VentasActivity : ComponentActivity() {
     fun BoxWithBackgroundForVentas(content: @Composable () -> Unit) {
         val backgroundImage = painterResource(id = R.drawable.fotofondo)
         Box(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = backgroundImage,
-                contentDescription = "Background Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
             )
             content()
         }
