@@ -35,7 +35,7 @@ class VentanaVenta(tk.Toplevel):
         titulo_ventas.grid(row=0, column=1, columnspan=3, padx=20, pady=20, sticky='n')
 
         # Tabla de ventas
-        columns = ("ID Venta", "ID Productos", "Total")
+        columns = ("ID Venta", "Productos", "Total")
         self.tabla = ttk.Treeview(self, columns=columns, show="headings")
 
         # Estilo para la tabla
@@ -71,46 +71,60 @@ class VentanaVenta(tk.Toplevel):
 
     def cargar_ventas(self):
         try:
-            response = requests.get("http://192.168.1.4:5000/ventaspc")
+            response = requests.get("http://192.168.0.16:5000/ventaspc")
             response.raise_for_status()
-            ventas = response.json()['ventas']
+            ventas = response.json()['ventas']  # Asegurarse de acceder al campo correcto
   
             for item in self.tabla.get_children():
                 self.tabla.delete(item)
 
             for venta in ventas:
                 id_venta = venta["id_venta"]
-                nombres_productos = " , ".join(map(str,nombreproductos(venta["id_productos"])))
-
+                nombres_productos = " , ".join(map(str, nombreproductos(venta["id_productos"])))
                 total = venta["total"]
-                self.tabla.insert("", "end", values=(id_venta,nombres_productos, total))
+                self.tabla.insert("", "end", values=(id_venta, nombres_productos, total))
 
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
 
     def producto_mas_vendido(self):
         try:
-            response = requests.get("http://192.168.1.4:5000/ventas")
+            response = requests.get("http://192.168.0.16:5000/ventaspc")
             response.raise_for_status()
-            ventas = response.json()['ventas']
-            productos = [prod['producto'] for venta in ventas for prod in venta['productos']]
-            precios = [prod['precio'] for venta in ventas for prod in venta['productos']]
+            ventas_data = response.json()  # Obtener la lista de ventas directamente
+            
+            ventas = ventas_data['ventas']  # Acceder al campo 'ventas' del JSON
+            
+            productos = [producto for venta in ventas for producto in venta['id_productos']]
             contador_productos = Counter(productos)
-            producto_mas_vendido, cantidad = contador_productos.most_common(1)[0]
-            precio_total = sum(precios[i] for i, producto in enumerate(productos) if producto == producto_mas_vendido)
-            messagebox.showinfo("Producto más vendido", f"Producto: {producto_mas_vendido}\nCantidad: {cantidad}\nPrecio Total: {precio_total}")
+            producto_mas_vendido_id, cantidad = contador_productos.most_common(1)[0]
+
+            # Obtener el nombre del producto más vendido
+            response_producto = requests.get(f"http://192.168.0.16:5000/productos/qr/{producto_mas_vendido_id}")
+            response_producto.raise_for_status()
+            nombre_producto = response_producto.json().get('Producto', 'Desconocido')
+
+            total = sum(venta['total'] for venta in ventas if producto_mas_vendido_id in venta['id_productos'])
+            
+            messagebox.showinfo("Producto más vendido", f"Producto: {nombre_producto}\nCantidad: {cantidad}\nTotal Vendido: {total}")
+
         except requests.exceptions.RequestException as e:
             messagebox.showerror("Error", f"No se pudieron cargar las ventas: {e}")
-       
 
 def ventana_ventas(parent):
     VentanaVenta(parent)
+
 def nombreproductos(id_productos):
     nombres = []
     for k in id_productos:
-        respuesta = requests.get(f"http://192.168.1.4:5000/productos/qr/{k}")
-        nombres.append(respuesta.json()['Producto'])
+        try:
+            respuesta = requests.get(f"http://192.168.0.16:5000/productos/qr/{k}")
+            respuesta.raise_for_status()
+            nombres.append(respuesta.json().get('Producto', 'Desconocido'))
+        except requests.exceptions.RequestException:
+            nombres.append('Desconocido')
     return nombres
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()

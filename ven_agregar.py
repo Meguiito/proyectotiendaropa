@@ -80,11 +80,11 @@ class VentanaAgregarProductos(tk.Toplevel):
     def agregar_producto(self):
         url = "http://192.168.1.4:5000/agregar-producto"
         datos = {
-            "tipo": self.entry1.get(),
-            "talla": self.entry2.get(),
-            "producto": self.entry3.get(),
-            "precio": self.entry4.get(),
-            "qr_id": self.entry5.get()
+            "productType": self.entry1.get(),
+            "productSize": self.entry2.get(),
+            "productName": self.entry3.get(),
+            "productPrice": self.entry4.get(),
+            "qrId": self.entry5.get()
         }
         try:
             respuesta = requests.post(url, json=datos)
